@@ -1,4 +1,4 @@
-use crate::dfa::transition::{
+use crate::dfa::delta::{
     ERR_DANGLING_STATE,
     ERR_DUPED_INPUT_TRANSITION,
     ERR_DUPED_TRANSITION,
@@ -8,10 +8,10 @@ use crate::dfa::transition::{
     ERR_MISSING_STATE_TRANSITION,
     ERR_REDEFINED_INPUT_TRANSITION,
     ERR_UNDEFINED_TRANSITION_STATE,
-    TransitionTable,
+    δ,
 };
-use crate::model::alphabet::Alphabet;
-use crate::model::state::{State, States};
+use crate::model::sigma::Σ;
+use crate::model::state::{Q, State};
 
 #[test]
 fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
@@ -22,16 +22,16 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "B")]),
         ("C", vec![(0, "C"), (1, "B")]),
         ("B", vec![(0, "A"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_DANGLING_STATE}"),
@@ -48,16 +48,16 @@ fn given_a_collection_of_transitions_with_duplicate_input_transitions_should_get
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "C"), (0, "C"), (1, "B")]),
         ("B", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_DUPED_INPUT_TRANSITION}"),
@@ -74,16 +74,16 @@ fn given_a_collection_of_transitions_with_duplicate_states_should_get_an_err() {
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "C"), (1, "A")]),
         ("C", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_DUPED_TRANSITION}"),
@@ -100,15 +100,15 @@ fn given_a_collection_of_transitions_with_missing_final_state_should_get_an_err(
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "C"), (1, "A")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_MISSING_FINAL_STATE_TRANSITION}"),
@@ -125,15 +125,15 @@ fn given_a_collection_of_transitions_with_missing_initial_state_should_get_an_er
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("B", vec![(0, "B"), (1, "C")]),
         ("C", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_MISSING_INITIAL_STATE_TRANSITION}"),
@@ -150,16 +150,16 @@ fn given_a_collection_of_transitions_with_missing_input_transitions_should_get_a
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "C"), (1, "A")]),
         ("D", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_UNDEFINED_TRANSITION_STATE}"),
@@ -176,15 +176,15 @@ fn given_a_collection_of_transitions_with_missing_state_transitions_should_get_a
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("B", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_MISSING_STATE_TRANSITION}"),
@@ -201,16 +201,16 @@ fn given_a_collection_of_transitions_with_redefined_input_transitions_should_get
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "C"), (0, "B"), (1, "B")]),
         ("B", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_REDEFINED_INPUT_TRANSITION}"),
@@ -227,16 +227,16 @@ fn given_a_collection_of_transitions_with_undefined_states_should_get_an_err() {
         State::Final("B"),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "C")]),
         ("B", vec![(0, "C"), (1, "B")]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_INCOMPLETE_INPUT_TRANSITIONS}"),
@@ -262,16 +262,16 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
         State::Final(SC),
     ];
 
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
-    let states = States::new(&states).expect("valid states");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         (SA, vec![(S0, SA), (S1, SB)]),
         (SC, vec![(S0, SC), (S1, SA)]),
         (SB, vec![(S0, SC), (S1, SB)]),
     ];
 
-    let sut = TransitionTable::new(&states, &alphabet, transitions);
+    let sut = δ::new(&q, &sigma, delta);
 
     if let Err(err) = sut {
         panic!("Unexpected Err: {err}");

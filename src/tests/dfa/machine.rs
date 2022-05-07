@@ -1,12 +1,12 @@
+use crate::dfa::delta::δ;
 use crate::dfa::machine::{DFA, ERR_INVALID_INPUT};
-use crate::dfa::transition::TransitionTable;
-use crate::model::alphabet::Alphabet;
-use crate::model::state::{State, States};
+use crate::model::sigma::Σ;
+use crate::model::state::{Q, State};
 
 #[test]
 fn given_a_valid_fsm_should_fail_incorrect_input() {
     let symbols = vec![0_u8, 1_u8];
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
         State::Initial("A"),
@@ -15,19 +15,18 @@ fn given_a_valid_fsm_should_fail_incorrect_input() {
         State::Interim("D"),
     ];
 
-    let states = States::new(&states).expect("valid states");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "A"), (1, "B")]),
         ("B", vec![(0, "B"), (1, "D")]),
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let transitions = TransitionTable::new(&states, &alphabet, transitions)
-        .expect("a valid transitions table");
+    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
 
-    let mut sut = DFA::new(transitions);
+    let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0, 1];
 
     sut.steps(&inputs).expect("expect no errors");
@@ -41,7 +40,7 @@ fn given_a_valid_fsm_should_fail_incorrect_input() {
 #[test]
 fn given_a_valid_fsm_should_fail_invalid_input() {
     let symbols = vec![0_u8, 1_u8];
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
         State::Initial("A"),
@@ -50,19 +49,18 @@ fn given_a_valid_fsm_should_fail_invalid_input() {
         State::Interim("D"),
     ];
 
-    let states = States::new(&states).expect("valid states");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "A"), (1, "B")]),
         ("B", vec![(0, "B"), (1, "D")]),
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let transitions = TransitionTable::new(&states, &alphabet, transitions)
-        .expect("a valid transitions table");
+    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
 
-    let mut sut = DFA::new(transitions);
+    let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 2];
     let actual = sut.steps(&inputs);
 
@@ -75,7 +73,7 @@ fn given_a_valid_fsm_should_fail_invalid_input() {
 #[test]
 fn given_a_valid_fsm_you_should_be_able_to_process_step_by_step() {
     let symbols = vec![0_u8, 1_u8];
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
         State::Initial("A"),
@@ -84,19 +82,18 @@ fn given_a_valid_fsm_you_should_be_able_to_process_step_by_step() {
         State::Interim("D"),
     ];
 
-    let states = States::new(&states).expect("valid states");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "A"), (1, "B")]),
         ("B", vec![(0, "B"), (1, "D")]),
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let transitions = TransitionTable::new(&states, &alphabet, transitions)
-        .expect("a valid transitions table");
+    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
 
-    let mut sut = DFA::new(transitions);
+    let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0, 0];
 
     for input in &inputs {
@@ -112,7 +109,7 @@ fn given_a_valid_fsm_you_should_be_able_to_process_step_by_step() {
 #[test]
 fn given_a_valid_fsm_you_should_be_able_to_process_steps() {
     let symbols = vec![0_u8, 1_u8];
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
         State::Initial("A"),
@@ -121,19 +118,18 @@ fn given_a_valid_fsm_you_should_be_able_to_process_steps() {
         State::Interim("D"),
     ];
 
-    let states = States::new(&states).expect("valid states");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "A"), (1, "B")]),
         ("B", vec![(0, "B"), (1, "D")]),
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let transitions = TransitionTable::new(&states, &alphabet, transitions)
-        .expect("a valid transitions table");
+    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
 
-    let mut sut = DFA::new(transitions);
+    let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0];
 
     sut.steps(&inputs).expect("expect no errors");
@@ -147,7 +143,7 @@ fn given_a_valid_fsm_you_should_be_able_to_process_steps() {
 #[test]
 fn given_a_valid_fsm_you_should_be_able_to_reset_and_restart_steps() {
     let symbols = vec![0_u8, 1_u8];
-    let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
+    let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
         State::Initial("A"),
@@ -156,19 +152,18 @@ fn given_a_valid_fsm_you_should_be_able_to_reset_and_restart_steps() {
         State::Interim("D"),
     ];
 
-    let states = States::new(&states).expect("valid states");
+    let q = Q::new(&states).expect("valid states");
 
-    let transitions = vec![
+    let delta = vec![
         ("A", vec![(0, "A"), (1, "C")]),
         ("C", vec![(0, "A"), (1, "B")]),
         ("B", vec![(0, "B"), (1, "D")]),
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let transitions = TransitionTable::new(&states, &alphabet, transitions)
-        .expect("a valid transitions table");
+    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
 
-    let mut sut = DFA::new(transitions);
+    let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0];
 
     // same as below without reset, expected to fail

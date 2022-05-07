@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::dfa::transition::TransitionTable;
+use crate::dfa::delta::δ;
 use crate::model::state::{State, Tag};
 
 pub(crate) const ERR_INVALID_INPUT: &str = "Invalid input encountered";
@@ -9,13 +9,13 @@ const EXPECTED_TRANSITION_DEFINED: &str = "DFA expects all transition to states 
 
 #[allow(clippy::upper_case_acronyms)]
 pub struct DFA<'a, A: Eq, S: Eq + Hash> {
-    transitions: TransitionTable<'a, A, S>,
+    transitions: δ<'a, A, S>,
     current: &'a State<Tag<'a, S>>,
 }
 
 impl<'a, A: Eq + Hash, S: Eq + Hash> DFA<'a, A, S>
 {
-    pub fn new(transitions: TransitionTable<'a, A, S>) -> Self {
+    pub fn new(transitions: δ<'a, A, S>) -> Self {
         let current = transitions.get_initial_state();
 
         Self {

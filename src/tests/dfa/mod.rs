@@ -1,2 +1,2 @@
 mod machine;
-mod transition;
+mod delta;

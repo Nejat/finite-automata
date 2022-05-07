@@ -1,2 +1,2 @@
-pub mod alphabet;
+pub mod sigma;
 pub mod state;

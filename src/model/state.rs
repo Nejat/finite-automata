@@ -66,9 +66,9 @@ impl<'a, T: Display + Eq> Display for Tag<'a, T> {
     }
 }
 
-pub struct States<'a, T: Eq>(Vec<State<Tag<'a, T>>>);
+pub struct Q<'a, T: Eq>(Vec<State<Tag<'a, T>>>);
 
-impl<'a, T: Eq> States<'a, T> {
+impl<'a, T: Eq> Q<'a, T> {
     pub(crate) fn get_state(&self, state: T) -> Option<&State<Tag<'a, T>>> {
         let find = vec![&state];
 
@@ -79,7 +79,7 @@ impl<'a, T: Eq> States<'a, T> {
     }
 }
 
-impl<'a, T: Eq> States<'a, T> {
+impl<'a, T: Eq> Q<'a, T> {
     pub fn new(states: &'a [State<T>]) -> Result<Self, &'static str> {
         if youve_been_duped_ref(states) {
             Err(ERR_DUPED_STATES)
@@ -107,7 +107,7 @@ impl<'a, T: Eq> States<'a, T> {
     }
 }
 
-impl<'a, T: Eq> AsRef<[State<Tag<'a, T>>]> for States<'a, T> {
+impl<'a, T: Eq> AsRef<[State<Tag<'a, T>>]> for Q<'a, T> {
     fn as_ref(&self) -> &[State<Tag<'a, T>>] {
         &self.0
     }

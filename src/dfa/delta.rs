@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use crate::model::alphabet::Alphabet;
-use crate::model::state::{State, States, Tag};
+use crate::model::sigma::Σ;
+use crate::model::state::{Q, State, Tag};
 use crate::youve_been_duped;
 
 pub(crate) const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
@@ -19,18 +19,19 @@ const EXPECTED_INITIAL_STATE: &str = "DFA expects an initial state defined in tr
 
 type Transitions<'a, A, S> = HashMap<&'a State<Tag<'a, S>>, HashMap<A, &'a State<Tag<'a, S>>>>;
 
-pub struct TransitionTable<'a, A: Eq, S: Eq + Hash>(Transitions<'a, A, S>);
+#[allow(non_camel_case_types)]
+pub struct δ<'a, A: Eq, S: Eq + Hash>(Transitions<'a, A, S>);
 
-impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for TransitionTable<'a, A, S> {
+impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for δ<'a, A, S> {
     fn as_ref(&self) -> &Transitions<'a, A, S> {
         &self.0
     }
 }
 
-impl<'a, A: Eq + Hash, S: Eq + Hash> TransitionTable<'a, A, S> {
+impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
     pub fn new(
-        states: &'a States<'a, S>,
-        alphabet: &'a Alphabet<'a, A>,
+        states: &'a Q<'a, S>,
+        alphabet: &'a Σ<'a, A>,
         transitions: Vec<(S, Vec<(A, S)>)>,
     ) -> Result<Self, &'static str> {
         let mut table = HashMap::new();

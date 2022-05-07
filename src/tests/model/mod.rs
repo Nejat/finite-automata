@@ -1,2 +1,2 @@
-mod alphabet;
+mod sigma;
 mod state;

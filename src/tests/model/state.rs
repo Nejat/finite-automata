@@ -1,4 +1,4 @@
-use crate::model::state::{ERR_DUPED_STATES, ERR_FINAL_STATES, ERR_INITIAL_STATES, State, States, Tag};
+use crate::model::state::{ERR_DUPED_STATES, ERR_FINAL_STATES, ERR_INITIAL_STATES, Q, State, Tag};
 use crate::tests::MachineState;
 
 #[test]
@@ -73,7 +73,8 @@ fn given_a_collection_of_values_for_states_with_dupe_state_names_we_should_get_a
         State::Interim("B"),
         State::Final("A"),
     ];
-    let sut = States::new(&states);
+
+    let sut = Q::new(&states);
 
     assert!(matches!(sut, Err(err) if err == ERR_DUPED_STATES))
 }
@@ -86,7 +87,8 @@ fn given_a_collection_of_values_for_states_with_multiple_initial_states_we_shoul
         State::Initial("C"),
         State::Final("D"),
     ];
-    let sut = States::new(&states);
+
+    let sut = Q::new(&states);
 
     assert!(matches!(sut, Err(err) if err == ERR_INITIAL_STATES))
 }
@@ -97,7 +99,8 @@ fn given_a_collection_of_values_for_states_with_no_final_states_we_should_get_an
         State::Initial("A"),
         State::Interim("B"),
     ];
-    let sut = States::new(&states);
+
+    let sut = Q::new(&states);
 
     assert!(matches!(sut, Err(err) if err == ERR_FINAL_STATES))
 }
@@ -109,7 +112,9 @@ fn given_a_collection_of_unique_values_for_states_should_get_states() {
         State::Interim("C"),
         State::Final("B"),
     ];
-    let sut = States::new(&states).expect("valid states");
+
+    let sut = Q::new(&states).expect("valid states");
+
     let expected = vec![
         State::Initial(Tag::new(&["A"]).unwrap()),
         State::Interim(Tag::new(&["C"]).unwrap()),
