@@ -61,10 +61,14 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> TransitionTable<'a, A, S> {
         } else if !table.keys().any(|key| matches!(key, StateNode::Final(_))) {
             Err(ERR_MISSING_FINAL_STATE_TRANSITION)
         } else {
-            let transition_states = table.values().flat_map(|transitions| transitions.values());
+            let states = table.values().flat_map(|transitions| transitions.values());
 
-            if transition_states.clone().all(|state| table.contains_key(*state)) {
-                if table.keys().any(|key| !transition_states.clone().any(|state| state == key)) {
+            if states.clone().all(|state| table.contains_key(*state)) {
+                let transition_states = |state| table.iter()
+                    .filter_map(move |(k, v)| if k != state { Some(v) } else { None })
+                    .flat_map(|transitions| transitions.values());
+
+                if table.keys().any(|key| !transition_states(key).any(|state| state == key)) {
                     Err(ERR_DANGLING_STATE)
                 } else {
                     Ok(Self(table))

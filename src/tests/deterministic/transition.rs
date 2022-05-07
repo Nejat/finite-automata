@@ -266,7 +266,7 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
     let states = States::new(&states).expect("valid states");
 
     let transitions = vec![
-        (SA, vec![(S0, SA), (S1, SC)]),
+        (SA, vec![(S0, SA), (S1, SB)]),
         (SC, vec![(S0, SC), (S1, SA)]),
         (SB, vec![(S0, SC), (S1, SB)]),
     ];
