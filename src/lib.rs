@@ -1,5 +1,5 @@
-mod dfa;
-mod model;
+pub mod dfa;
+pub mod model;
 
 #[cfg(test)]
 mod tests;

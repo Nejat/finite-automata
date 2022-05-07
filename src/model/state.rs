@@ -1,7 +1,9 @@
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::fmt;
 
-use crate::{youve_been_duped, youve_been_duped_ref};
+#[cfg(test)]
+use crate::youve_been_duped;
+use crate::youve_been_duped_ref;
 
 pub(crate) const ERR_DUPED_STATES: &str = "States must be a unique collection of state identifiers";
 pub(crate) const ERR_INITIAL_STATES: &str = "States must contain at most one initial state";
@@ -27,6 +29,7 @@ impl<T: Eq> AsRef<T> for State<T> {
 #[derive(Eq, PartialEq, Hash)]
 pub struct Tag<'a, T: Eq>(Vec<&'a T>);
 
+#[cfg(test)]
 impl<'a, T: Eq> Tag<'a, T> {
     pub(crate) fn new(sub_states: &'a [T]) -> Result<Self, &'static str> {
         if youve_been_duped(sub_states) {

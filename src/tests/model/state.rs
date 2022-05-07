@@ -1,6 +1,8 @@
 use crate::model::state::{ERR_DUPED_STATES, ERR_FINAL_STATES, ERR_INITIAL_STATES, Q, State, Tag};
 use crate::tests::MachineState;
 
+// todo refactor tests to public interface, i.e. Tag::new is not public
+
 #[test]
 fn given_a_collection_of_values_for_a_state_with_dupes_we_should_get_an_err() {
     let states = vec!["A", "B", "A"];
