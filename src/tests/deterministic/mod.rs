@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter, Write};
 use std::fmt;
 
 mod alphabet;
+mod fsm;
 mod state;
 mod transition;
 

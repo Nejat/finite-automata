@@ -14,6 +14,8 @@ pub(crate) const ERR_MISSING_INITIAL_STATE_TRANSITION: &str = "Transitions Table
 pub(crate) const ERR_MISSING_STATE_TRANSITION: &str = "Not all transitions match states in the transitions table";
 pub(crate) const ERR_REDEFINED_INPUT_TRANSITION: &str = "Each state transition must define each input only once";
 
+const EXPECTED_INITIAL_STATE: &str = "FSM expects an initial state defined in transitions table";
+
 type Transitions<'a, A, S> = HashMap<&'a StateNode<State<'a, S>>, HashMap<A, &'a StateNode<State<'a, S>>>>;
 
 pub struct TransitionTable<'a, A: Eq, S: Eq + Hash>(Transitions<'a, A, S>);
@@ -66,5 +68,11 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> TransitionTable<'a, A, S> {
                 Err(ERR_MISSING_STATE_TRANSITION)
             }
         }
+    }
+
+    pub(crate) fn get_initial_state(&self) -> &'a StateNode<State<'a, S>> {
+        self.0.keys()
+            .find(|s| matches!(s, StateNode::Initial(_)))
+            .expect(EXPECTED_INITIAL_STATE)
     }
 }
