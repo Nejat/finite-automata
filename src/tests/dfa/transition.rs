@@ -1,6 +1,4 @@
-use crate::deterministic::alphabet::Alphabet;
-use crate::deterministic::state::{StateNode, States};
-use crate::deterministic::transition::{
+use crate::dfa::transition::{
     ERR_DANGLING_STATE,
     ERR_DUPED_INPUT_TRANSITION,
     ERR_DUPED_TRANSITION,
@@ -10,16 +8,18 @@ use crate::deterministic::transition::{
     ERR_MISSING_STATE_TRANSITION,
     ERR_REDEFINED_INPUT_TRANSITION,
     ERR_UNDEFINED_TRANSITION_STATE,
-    TransitionTable
+    TransitionTable,
 };
+use crate::model::alphabet::Alphabet;
+use crate::model::state::{State, States};
 
 #[test]
 fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -43,9 +43,9 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
 fn given_a_collection_of_transitions_with_duplicate_input_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -69,9 +69,9 @@ fn given_a_collection_of_transitions_with_duplicate_input_transitions_should_get
 fn given_a_collection_of_transitions_with_duplicate_states_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -95,9 +95,9 @@ fn given_a_collection_of_transitions_with_duplicate_states_should_get_an_err() {
 fn given_a_collection_of_transitions_with_missing_final_state_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -120,9 +120,9 @@ fn given_a_collection_of_transitions_with_missing_final_state_should_get_an_err(
 fn given_a_collection_of_transitions_with_missing_initial_state_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -145,9 +145,9 @@ fn given_a_collection_of_transitions_with_missing_initial_state_should_get_an_er
 fn given_a_collection_of_transitions_with_missing_input_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -171,9 +171,9 @@ fn given_a_collection_of_transitions_with_missing_input_transitions_should_get_a
 fn given_a_collection_of_transitions_with_missing_state_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -196,9 +196,9 @@ fn given_a_collection_of_transitions_with_missing_state_transitions_should_get_a
 fn given_a_collection_of_transitions_with_redefined_input_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -222,9 +222,9 @@ fn given_a_collection_of_transitions_with_redefined_input_transitions_should_get
 fn given_a_collection_of_transitions_with_undefined_states_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        StateNode::Initial("A"),
-        StateNode::Interim("C"),
-        StateNode::Final("B"),
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");
@@ -257,9 +257,9 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
 
     let symbols = vec![S0, S1];
     let states = vec![
-        StateNode::Initial(SA),
-        StateNode::Interim(SB),
-        StateNode::Final(SC),
+        State::Initial(SA),
+        State::Interim(SB),
+        State::Final(SC),
     ];
 
     let alphabet = Alphabet::new(&symbols).expect("a valid alphabet");

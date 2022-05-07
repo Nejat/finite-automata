@@ -1,4 +1,4 @@
-use crate::deterministic::alphabet::{Alphabet, ERR_DUPED_ALPHABET};
+use crate::model::alphabet::{Alphabet, ERR_DUPED_ALPHABET};
 
 #[test]
 fn given_a_collection_of_symbols_with_dupes_we_should_get_an_err() {

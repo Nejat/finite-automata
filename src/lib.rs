@@ -1,4 +1,5 @@
-mod deterministic;
+mod dfa;
+mod model;
 
 #[cfg(test)]
 mod tests;

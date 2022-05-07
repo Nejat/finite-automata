@@ -1,1 +1,1 @@
-# finite-state-machine
+# finite-automata
