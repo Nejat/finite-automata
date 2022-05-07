@@ -3,7 +3,8 @@ use std::hash::Hash;
 use crate::deterministic::state::{State, StateNode};
 use crate::deterministic::transition::TransitionTable;
 
-const EXPECTED_INPUT_DEFINED: &str = "FSM expects all transition inputs defined in transition";
+pub(crate) const ERR_INVALID_INPUT: &str = "Invalid input encountered";
+
 const EXPECTED_TRANSITION_DEFINED: &str = "FSM expects all transition to states defined in transitions table";
 
 #[allow(clippy::upper_case_acronyms)]
@@ -31,19 +32,20 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> FSM<'a, A, S>
         self.current = self.transitions.get_initial_state();
     }
 
-    pub fn step(&mut self, input: &A) ->  &'a StateNode<State<'a, S>> {
-        let transitions = self.transitions.as_ref().get(self.current).expect(EXPECTED_TRANSITION_DEFINED);
+    pub fn step(&mut self, input: &A) ->  Result<&'a StateNode<State<'a, S>>, &'static str> {
+        let transitions = self.transitions.as_ref().get(self.current)
+            .expect(EXPECTED_TRANSITION_DEFINED);
 
-        self.current = transitions.get(input).expect(EXPECTED_INPUT_DEFINED);
+        self.current = transitions.get(input).ok_or(ERR_INVALID_INPUT)?;
 
-        self.current
+        Ok(self.current)
     }
 
-    pub fn steps(&mut self, inputs: &[A]) ->  &'a StateNode<State<'a, S>> {
+    pub fn steps(&mut self, inputs: &[A]) ->  Result<&'a StateNode<State<'a, S>>, &'static str> {
         for input in inputs {
-            self.step(input);
+            self.step(input)?;
         }
 
-        self.current
+        Ok(self.current)
     }
 }
