@@ -9,10 +9,20 @@ pub(crate) const ERR_DUPED_TRANSITION: &str = "List of state transitions must be
 pub(crate) const ERR_UNDEFINED_TRANSITION_STATE: &str = "State transition not in States";
 pub(crate) const ERR_DUPED_INPUT_TRANSITION: &str = "Each state transition must contain unique inputs";
 pub(crate) const ERR_INCOMPLETE_INPUT_TRANSITIONS: &str = "Each state must define a transition for all inputs";
-pub(crate) const ERR_MISSING_STATE_TRANSITION: &str = "Not all States have a transition defined";
+pub(crate) const ERR_MISSING_FINAL_STATE_TRANSITION: &str = "Transitions Table requires a Final state";
+pub(crate) const ERR_MISSING_INITIAL_STATE_TRANSITION: &str = "Transitions Table requires an Initial state";
+pub(crate) const ERR_MISSING_STATE_TRANSITION: &str = "Not all transitions match states in the transitions table";
 pub(crate) const ERR_REDEFINED_INPUT_TRANSITION: &str = "Each state transition must define each input only once";
 
-pub struct TransitionTable<'a, A: Eq, S: Eq + Hash>(HashMap<&'a StateNode<State<'a, S>>, HashMap<A, &'a StateNode<State<'a, S>>>>);
+type Transitions<'a, A, S> = HashMap<&'a StateNode<State<'a, S>>, HashMap<A, &'a StateNode<State<'a, S>>>>;
+
+pub struct TransitionTable<'a, A: Eq, S: Eq + Hash>(Transitions<'a, A, S>);
+
+impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for TransitionTable<'a, A, S> {
+    fn as_ref(&self) -> &Transitions<'a, A, S> {
+        &self.0
+    }
+}
 
 impl<'a, A: Eq + Hash, S: Eq + Hash> TransitionTable<'a, A, S> {
     pub fn new(
@@ -43,10 +53,18 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> TransitionTable<'a, A, S> {
                 .collect::<Result<HashMap<_,_>, _>>()?);
         }
 
-        if states.as_ref().len() != table.len() {
-            Err(ERR_MISSING_STATE_TRANSITION)
+        if !table.keys().any(|key| matches!(key, StateNode::Initial(_))) {
+            Err(ERR_MISSING_INITIAL_STATE_TRANSITION)
+        } else if !table.keys().any(|key| matches!(key, StateNode::Final(_))) {
+            Err(ERR_MISSING_FINAL_STATE_TRANSITION)
         } else {
-            Ok(Self(table))
+            let mut transition_states = table.values().flat_map(|transitions| transitions.values());
+
+            if transition_states.all(|state| table.contains_key(*state)) {
+                Ok(Self(table))
+            } else {
+                Err(ERR_MISSING_STATE_TRANSITION)
+            }
         }
     }
 }
