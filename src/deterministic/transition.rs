@@ -5,6 +5,7 @@ use crate::deterministic::alphabet::Alphabet;
 use crate::deterministic::state::{State, StateNode, States};
 use crate::youve_been_duped;
 
+pub(crate) const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
 pub(crate) const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
 pub(crate) const ERR_UNDEFINED_TRANSITION_STATE: &str = "State transition not in States";
 pub(crate) const ERR_DUPED_INPUT_TRANSITION: &str = "Each state transition must contain unique inputs";
@@ -60,10 +61,14 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> TransitionTable<'a, A, S> {
         } else if !table.keys().any(|key| matches!(key, StateNode::Final(_))) {
             Err(ERR_MISSING_FINAL_STATE_TRANSITION)
         } else {
-            let mut transition_states = table.values().flat_map(|transitions| transitions.values());
+            let transition_states = table.values().flat_map(|transitions| transitions.values());
 
-            if transition_states.all(|state| table.contains_key(*state)) {
-                Ok(Self(table))
+            if transition_states.clone().all(|state| table.contains_key(*state)) {
+                if table.keys().any(|key| !transition_states.clone().any(|state| state == key)) {
+                    Err(ERR_DANGLING_STATE)
+                } else {
+                    Ok(Self(table))
+                }
             } else {
                 Err(ERR_MISSING_STATE_TRANSITION)
             }
