@@ -1,7 +1,6 @@
-use crate::dfa::delta::δ;
-use crate::dfa::machine::{DFA, ERR_INVALID_INPUT};
-use crate::model::sigma::Σ;
-use crate::model::state::{Q, State};
+use crate::dfa::{DFA, δ};
+use crate::dfa::machine::ERR_INVALID_INPUT;
+use crate::model::{Q, State, Σ};
 
 #[test]
 fn given_a_valid_fsm_should_fail_incorrect_input() {

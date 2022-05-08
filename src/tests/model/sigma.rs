@@ -1,4 +1,5 @@
-use crate::model::sigma::{ERR_DUPED_ALPHABET, Σ};
+use crate::model::sigma::ERR_DUPED_ALPHABET;
+use crate::model::Σ;
 
 #[test]
 fn given_a_collection_of_symbols_with_dupes_we_should_get_an_err() {

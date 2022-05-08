@@ -1,3 +1,4 @@
+use crate::model::{Q, State, Σ};
 use crate::nfa::delta::{
     ERR_DANGLING_STATE,
     ERR_DUPED_INPUT_TRANSITION,
@@ -7,10 +8,8 @@ use crate::nfa::delta::{
     ERR_MISSING_STATE_TRANSITION,
     ERR_UNDEFINED_SYMBOL,
     ERR_UNDEFINED_TRANSITION_STATE,
-    δ,
 };
-use crate::model::sigma::Σ;
-use crate::model::state::{Q, State};
+use crate::nfa::δ;
 
 #[test]
 fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {

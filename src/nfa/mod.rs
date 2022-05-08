@@ -1,1 +1,4 @@
-pub mod delta;
+pub use delta::δ;
+
+pub(crate) mod delta;
+
