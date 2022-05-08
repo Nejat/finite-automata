@@ -40,6 +40,31 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
 }
 
 #[test]
+fn given_a_collection_of_transitions_with_dangling_initial_state_should_give_you_a_transition_table() {
+    let symbols = vec![0, 1];
+    let states = vec![
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
+    ];
+
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
+
+    let delta = vec![
+        ("A", vec![(0, "A"), (1, "C")]),
+        ("C", vec![(0, "C"), (1, "B")]),
+        ("B", vec![(0, "B"), (1, "B")]),
+    ];
+
+    let sut = δ::new(&q, &sigma, delta);
+
+    if let Err(err) = sut {
+        panic!("Unexpected Err: {err}");
+    }
+}
+
+#[test]
 fn given_a_collection_of_transitions_with_duplicate_input_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![

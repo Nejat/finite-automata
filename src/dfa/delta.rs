@@ -70,11 +70,17 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
             let states = table.values().flat_map(|transitions| transitions.values());
 
             if states.clone().all(|state| table.contains_key(*state)) {
-                let transition_states = |state| table.iter()
-                    .filter_map(move |(k, v)| if k != state { Some(v) } else { None })
-                    .flat_map(|transitions| transitions.values());
+                let transition_states = |transition| table.iter()
+                    .filter_map(
+                        move |(state, transitions)|
+                            if state != transition || matches!(state, State::Initial(_)) {
+                                Some(transitions)
+                            } else {
+                                None
+                            }
+                    ).flat_map(|transitions| transitions.values());
 
-                if table.keys().any(|key| !transition_states(key).any(|state| state == key)) {
+                if table.keys().any(|state| !transition_states(state).any(|transition| transition == state)) {
                     Err(ERR_DANGLING_STATE)
                 } else {
                     Ok(Self(table))
