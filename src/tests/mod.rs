@@ -3,6 +3,7 @@ use std::fmt;
 
 mod dfa;
 mod model;
+mod nfa;
 
 #[derive(Eq, PartialEq)]
 pub enum MachineState { A, B }
