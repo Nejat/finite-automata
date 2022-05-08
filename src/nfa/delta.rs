@@ -39,8 +39,6 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
 
             if table.contains_key(state_node) {
                 return Err(ERR_DUPED_TRANSITION);
-            } else if input_transitions.iter().any(|(sym, _)| !sigma.as_ref().contains(sym)) {
-                return Err(ERR_UNDEFINED_SYMBOL);
             }
 
             let inputs = input_transitions.into_iter()
@@ -50,7 +48,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                         match acc {
                             Ok(mut acc) => {
                                 if !sigma.as_ref().contains(&sym) {
-                                    Err("")
+                                    Err(ERR_UNDEFINED_SYMBOL)
                                 } else {
                                     let state = q.get_state(state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?;
                                     let entry = acc.entry(sym).or_insert_with(Vec::new);
