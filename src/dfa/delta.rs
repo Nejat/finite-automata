@@ -7,6 +7,7 @@ use crate::youve_been_duped;
 
 pub(crate) const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
 pub(crate) const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
+pub(crate) const ERR_UNDEFINED_SYMBOL: &str = "Use of undefined symbol in input transitions";
 pub(crate) const ERR_UNDEFINED_TRANSITION_STATE: &str = "State transition not in States";
 pub(crate) const ERR_DUPED_INPUT_TRANSITION: &str = "Each state transition must contain unique inputs";
 pub(crate) const ERR_INCOMPLETE_INPUT_TRANSITIONS: &str = "Each state must define a transition for all inputs";
@@ -30,31 +31,35 @@ impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for δ<'a, A, S> {
 
 impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
     pub fn new(
-        states: &'a Q<'a, S>,
-        alphabet: &'a Σ<'a, A>,
-        transitions: Vec<(S, Vec<(A, S)>)>,
+        q: &'a Q<'a, S>,
+        sigma: &'a Σ<'a, A>,
+        delta: Vec<(S, Vec<(A, S)>)>,
     ) -> Result<Self, &'static str> {
         let mut table = HashMap::new();
 
-        for (state, inputs) in transitions {
-            let state_node = { states.get_state(state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)? };
+        for (state, input_transitions) in delta {
+            let state_node = { q.get_state(state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)? };
 
             if table.contains_key(state_node) {
                 return Err(ERR_DUPED_TRANSITION);
             }
 
-            if youve_been_duped(&inputs) {
+            if youve_been_duped(&input_transitions) {
                 return Err(ERR_DUPED_INPUT_TRANSITION);
-            } else if alphabet.as_ref().iter().any(|a| !inputs.iter().any(|v| v.0 == *a)) {
+            } else if sigma.as_ref().iter().any(|sym1| !input_transitions.iter().any(|(sym2, _)| sym2 == sym1)) {
                 return Err(ERR_INCOMPLETE_INPUT_TRANSITIONS);
-            } else if alphabet.as_ref().iter().count() != inputs.len() {
+            } else if input_transitions.iter().any(|(sym, _)| !sigma.as_ref().contains(sym)) {
+                return Err(ERR_UNDEFINED_SYMBOL);
+            } else if sigma.as_ref().iter().count() != input_transitions.len() {
                 return Err(ERR_REDEFINED_INPUT_TRANSITION);
             }
 
-            table.insert(state_node, inputs
-                .into_iter()
-                .map(|(sym, state)| Ok((sym, states.get_state(state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?)))
-                .collect::<Result<HashMap<_, _>, _>>()?);
+            let inputs = input_transitions.into_iter()
+                .map(|(sym, state)|
+                    Ok((sym, q.get_state(state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?))
+                ).collect::<Result<HashMap<_, _>, _>>();
+
+            table.insert(state_node, inputs?);
         }
 
         if !table.keys().any(|key| matches!(key, State::Initial(_))) {

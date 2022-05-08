@@ -7,6 +7,7 @@ use crate::dfa::delta::{
     ERR_MISSING_INITIAL_STATE_TRANSITION,
     ERR_MISSING_STATE_TRANSITION,
     ERR_REDEFINED_INPUT_TRANSITION,
+    ERR_UNDEFINED_SYMBOL,
     ERR_UNDEFINED_TRANSITION_STATE,
     δ,
 };
@@ -241,6 +242,32 @@ fn given_a_collection_of_transitions_with_undefined_states_should_get_an_err() {
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_INCOMPLETE_INPUT_TRANSITIONS}"),
         Err(err) => assert_eq!(ERR_INCOMPLETE_INPUT_TRANSITIONS, err)
+    }
+}
+
+#[test]
+fn given_a_collection_of_transitions_with_undefined_symbols_should_get_an_err() {
+    let symbols = vec![0, 1];
+    let states = vec![
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
+    ];
+
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
+
+    let delta = vec![
+        ("A", vec![(0, "A"), (1, "C"), (2, "B")]),
+        ("C", vec![(0, "C")]),
+        ("B", vec![(0, "C"), (1, "B")]),
+    ];
+
+    let sut = δ::new(&q, &sigma, delta);
+
+    match sut {
+        Ok(_) => panic!("Expected Err: {ERR_UNDEFINED_SYMBOL}"),
+        Err(err) => assert_eq!(ERR_UNDEFINED_SYMBOL, err)
     }
 }
 
