@@ -163,11 +163,11 @@ fn given_a_valid_fsm_you_should_be_able_to_reset_and_restart_steps() {
     let delta = dfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
 
     let mut sut = DFA::new(delta);
-    let inputs = [0, 1, 1, 0];
+    let inputs = [0, 1, 1, 1, 0];
 
     // same as below without reset, expected to fail
-    sut.steps(&inputs[..=1]).expect("expect no errors");
-    sut.steps(&inputs[1..]).expect("expect no errors");
+    sut.steps(&inputs[..2]).expect("expect no errors");
+    sut.steps(&inputs[2..]).expect("expect no errors");
 
     let actual = sut.matches();
     let expected = false;
@@ -176,11 +176,11 @@ fn given_a_valid_fsm_you_should_be_able_to_reset_and_restart_steps() {
 
     sut.reset();
 
-    sut.steps(&inputs[..=1]).expect("expect no errors");
+    sut.steps(&inputs[..2]).expect("expect no errors");
 
     sut.reset();
 
-    sut.steps(&inputs[1..]).expect("expect no errors");
+    sut.steps(&inputs[2..]).expect("expect no errors");
 
     let actual = sut.matches();
     let expected = true;
