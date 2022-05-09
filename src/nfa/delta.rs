@@ -5,21 +5,22 @@ use std::hash::Hash;
 use crate::model::sigma::Σ;
 use crate::model::state::{Q, State, Tag};
 
-pub(crate) type TransitionState<'a, S> = HashSet<&'a State<Tag<'a, S>>>;
+pub type TransitionState<'a, S> = HashSet<&'a State<Tag<'a, S>>>;
 
 type Transitions<'a, A, S> = HashMap<&'a State<Tag<'a, S>>, HashMap<A, TransitionState<'a, S>>>;
 
-pub(crate) const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
-pub(crate) const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
-pub(crate) const ERR_UNDEFINED_SYMBOL: &str = "Use of undefined symbol in input transitions";
-pub(crate) const ERR_UNDEFINED_TRANSITION_STATE: &str = "State transition not in States";
-pub(crate) const ERR_DUPED_INPUT_TRANSITION: &str = "Each state transition must contain unique inputs";
-pub(crate) const ERR_MISSING_FINAL_STATE_TRANSITION: &str = "Transitions Table requires a Final state";
-pub(crate) const ERR_MISSING_INITIAL_STATE_TRANSITION: &str = "Transitions Table requires an Initial state";
-pub(crate) const ERR_MISSING_STATE_TRANSITION: &str = "Not all transitions match states in the transitions table";
+pub const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
+pub const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
+pub const ERR_UNDEFINED_SYMBOL: &str = "Use of undefined symbol in input transitions";
+pub const ERR_UNDEFINED_TRANSITION_STATE: &str = "State transition not in States";
+pub const ERR_DUPED_INPUT_TRANSITION: &str = "Each state transition must contain unique inputs";
+pub const ERR_MISSING_FINAL_STATE_TRANSITION: &str = "Transitions Table requires a Final state";
+pub const ERR_MISSING_INITIAL_STATE_TRANSITION: &str = "Transitions Table requires an Initial state";
+pub const ERR_MISSING_STATE_TRANSITION: &str = "Not all transitions match states in the transitions table";
 
 const EXPECTED_INITIAL_STATE: &str = "DFA expects an initial state defined in transitions table";
 
+///
 #[allow(non_camel_case_types)]
 pub struct δ<'a, A: Eq, S: Eq + Hash> {
     sigma: &'a Σ<'a, A>,
@@ -33,6 +34,7 @@ impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for δ<'a, A, S> {
 }
 
 impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
+    /// # Errors
     pub fn new(
         q: &'a Q<'a, S>,
         sigma: &'a Σ<'a, A>,
@@ -41,7 +43,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
         let mut delta = HashMap::new();
 
         for (state, input_transitions) in delta_source {
-            let state_node = { q.get_state(state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)? };
+            let state_node = { q.get_state(&state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)? };
 
             if delta.contains_key(state_node) {
                 return Err(ERR_DUPED_TRANSITION);
@@ -53,10 +55,8 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                     |acc, (sym, state)|
                         match acc {
                             Ok(mut acc) => {
-                                if !sigma.as_ref().contains(&sym) {
-                                    Err(ERR_UNDEFINED_SYMBOL)
-                                } else {
-                                    let state = q.get_state(state)
+                                if sigma.as_ref().contains(&sym) {
+                                    let state = q.get_state(&state)
                                         .ok_or(ERR_UNDEFINED_TRANSITION_STATE)?;
 
                                     let entry = acc.entry(sym).or_insert_with(HashSet::new);
@@ -68,6 +68,8 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
 
                                         Ok(acc)
                                     }
+                                } else {
+                                    Err(ERR_UNDEFINED_SYMBOL)
                                 }
                             }
                             err @ Err(_) => err
@@ -82,18 +84,18 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
         } else if !delta.keys().any(|key| matches!(key, State::Final(_))) {
             Err(ERR_MISSING_FINAL_STATE_TRANSITION)
         } else {
-            let states = delta.values().flat_map(|transitions| transitions.values());
+            let states = delta.values().flat_map(HashMap::values);
 
             if states.clone().all(|states| states.iter().all(|state| delta.contains_key(*state))) {
                 let transition_states = |transition| delta.iter()
                     .filter_map(
                         move |(state, transitions)|
-                            if state != transition {
-                                Some(transitions)
-                            } else {
+                            if state == transition {
                                 None
+                            } else {
+                                Some(transitions)
                             }
-                    ).flat_map(|transitions| transitions.values());
+                    ).flat_map(HashMap::values);
 
                 if delta.keys().any(|state|
                     !matches!(state, State::Initial(_)) &&

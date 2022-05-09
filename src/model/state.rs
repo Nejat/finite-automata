@@ -5,14 +5,20 @@ use std::fmt;
 use crate::youve_been_duped;
 use crate::youve_been_duped_ref;
 
-pub(crate) const ERR_DUPED_STATES: &str = "States must be a unique collection of state identifiers";
-pub(crate) const ERR_INITIAL_STATES: &str = "States must contain at most one initial state";
-pub(crate) const ERR_FINAL_STATES: &str = "States must contain at least one final state";
+pub const ERR_DUPED_STATES: &str = "States must be a unique collection of state identifiers";
+pub const ERR_INITIAL_STATES: &str = "States must contain at most one initial state";
+pub const ERR_FINAL_STATES: &str = "States must contain at least one final state";
 
+///
 #[derive(Eq, PartialEq, Hash)]
 pub enum State<T: Eq> {
+    ///
     Initial(T),
+
+    ///
     Interim(T),
+
+    ///
     Final(T),
 }
 
@@ -46,11 +52,13 @@ impl<T: Display + Eq> Display for State<T> {
     }
 }
 
+///
 #[derive(Eq, PartialEq, Hash)]
 pub struct Tag<'a, T: Eq>(Vec<&'a T>);
 
 #[cfg(test)]
 impl<'a, T: Eq> Tag<'a, T> {
+    /// # Errors
     pub(crate) fn new(sub_states: &'a [T]) -> Result<Self, &'static str> {
         if youve_been_duped(sub_states) {
             Err("State must be a unique collection of values")
@@ -81,7 +89,7 @@ impl<'a, T: Display + Eq> Debug for Tag<'a, T> {
 
 impl<'a, T: Display + Eq> Display for Tag<'a, T> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        for itm in self.0.iter() {
+        for itm in &self.0 {
             fmt.write_fmt(format_args!("{itm}"))?;
         }
 
@@ -89,11 +97,12 @@ impl<'a, T: Display + Eq> Display for Tag<'a, T> {
     }
 }
 
+///
 pub struct Q<'a, T: Eq>(Vec<State<Tag<'a, T>>>);
 
 impl<'a, T: Eq> Q<'a, T> {
-    pub(crate) fn get_state(&self, state: T) -> Option<&State<Tag<'a, T>>> {
-        let find = vec![&state];
+    pub(crate) fn get_state(&self, state: &T) -> Option<&State<Tag<'a, T>>> {
+        let find = vec![state];
 
         match self.as_ref().iter().find(|v| (**v).as_ref().as_ref() == find) {
             Some(state) => Some(state),
@@ -103,15 +112,14 @@ impl<'a, T: Eq> Q<'a, T> {
 }
 
 impl<'a, T: Eq> Q<'a, T> {
+    /// # Errors
     pub fn new(states: &'a [State<T>]) -> Result<Self, &'static str> {
         if youve_been_duped_ref(states) {
             Err(ERR_DUPED_STATES)
         } else {
             let initial_states = states.iter().filter(|v| matches!(v, State::Initial(_))).count();
 
-            if initial_states != 1 {
-                Err(ERR_INITIAL_STATES)
-            } else {
+            if initial_states == 1 {
                 let final_states = states.iter().filter(|v| matches!(v, State::Final(_))).count();
 
                 if final_states == 0 {
@@ -125,6 +133,8 @@ impl<'a, T: Eq> Q<'a, T> {
                         }
                     ).collect()))
                 }
+            } else {
+                Err(ERR_INITIAL_STATES)
             }
         }
     }

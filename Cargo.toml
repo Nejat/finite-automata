@@ -2,6 +2,14 @@
 name = "finite-state-machine"
 version = "0.1.0"
 edition = "2021"
+description = "library of finite-automata implementations"
+license = "MIT or Apache-2.0"
+include = ["src/**/*", "Cargo.toml", "LICENSE-MIT", "README.md"]
+homepage = "https://github.com/Nejat/finite-automata"
+repository = "https://github.com/Nejat/finite-automata"
+authors = ["Nejat<nejatoz@gmail.com>"]
+keywords = ["fsm", "dfa", "nfa", "automata"]
+categories = ["Algorithms"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

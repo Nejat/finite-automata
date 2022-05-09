@@ -1,6 +1,6 @@
+use crate::model::{Q, State, Σ};
 use crate::nfa::{self, NFA};
 use crate::nfa::machine::ERR_INVALID_INPUT;
-use crate::model::{Q, State, Σ};
 
 #[test]
 fn given_a_valid_fsm_should_fail_incorrect_input() {

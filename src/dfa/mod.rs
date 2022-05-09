@@ -1,3 +1,5 @@
+//!
+
 pub use delta::δ;
 pub use machine::DFA;
 

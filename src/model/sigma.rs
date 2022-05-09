@@ -2,8 +2,9 @@ use std::fmt::{self, Debug, Display, Formatter, Write};
 
 use crate::youve_been_duped;
 
-pub(crate) const ERR_DUPED_ALPHABET: &str = "Alphabet must be a unique collection of symbols";
+pub const ERR_DUPED_ALPHABET: &str = "Alphabet must be a unique collection of symbols";
 
+///
 pub struct Σ<'a, T>(&'a [T]);
 
 impl<'a, T: Display> Display for Σ<'a, T> {
@@ -39,6 +40,7 @@ impl<'a, T> AsRef<[T]> for Σ<'a, T> {
 }
 
 impl<'a, T: Eq> Σ<'a, T> {
+    /// # Errors
     pub fn new(symbols: &'a [T]) -> Result<Self, &'static str> {
         if youve_been_duped(symbols) {
             Err(ERR_DUPED_ALPHABET)
