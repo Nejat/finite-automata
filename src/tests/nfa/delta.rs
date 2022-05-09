@@ -1,3 +1,5 @@
+use std::fmt::{self, Display, Formatter, Write};
+
 use crate::model::{Q, State, Σ};
 use crate::nfa::delta::{
     ERR_DANGLING_STATE,
@@ -34,6 +36,31 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
     match sut {
         Ok(_) => panic!("Expected Err: {ERR_DANGLING_STATE}"),
         Err(err) => assert_eq!(ERR_DANGLING_STATE, err)
+    }
+}
+
+#[test]
+fn given_a_collection_of_transitions_with_dangling_initial_state_should_give_you_a_transition_table() {
+    let symbols = vec![0, 1];
+    let states = vec![
+        State::Initial("A"),
+        State::Interim("C"),
+        State::Final("B"),
+    ];
+
+    let sigma = Σ::new(&symbols).expect("valid sigma");
+    let q = Q::new(&states).expect("valid states");
+
+    let delta = vec![
+        ("A", vec![(0, "A"), (1, "C")]),
+        ("C", vec![(0, "C"), (1, "B")]),
+        ("B", vec![(0, "B"), (1, "B")]),
+    ];
+
+    let sut = δ::new(&q, &sigma, delta);
+
+    if let Err(err) = sut {
+        panic!("Unexpected Err: {err}");
     }
 }
 
@@ -223,6 +250,15 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
 
     #[derive(Copy, Clone, Eq, PartialEq, Hash)]
     enum Sym { S0, S1 }
+
+    impl Display for Sym {
+        fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+            fmt.write_char(match self {
+                Self::S0 => '0',
+                Self::S1 => '1'
+            })
+        }
+    }
 
     #[derive(Copy, Clone, Eq, PartialEq, Hash)]
     enum Sta { SA, SB, SC }
