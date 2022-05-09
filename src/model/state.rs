@@ -9,7 +9,7 @@ pub(crate) const ERR_DUPED_STATES: &str = "States must be a unique collection of
 pub(crate) const ERR_INITIAL_STATES: &str = "States must contain at most one initial state";
 pub(crate) const ERR_FINAL_STATES: &str = "States must contain at least one final state";
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Eq, PartialEq, Hash)]
 pub enum State<T: Eq> {
     Initial(T),
     Interim(T),
@@ -22,6 +22,26 @@ impl<T: Eq> AsRef<T> for State<T> {
             State::Initial(node) |
             State::Interim(node) |
             State::Final(node) => node
+        }
+    }
+}
+
+impl<T: Debug + Eq> Debug for State<T> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            State::Initial(tag) => fmt.write_fmt(format_args!(">({:?})", tag)),
+            State::Interim(tag) => fmt.write_fmt(format_args!("({:?})", tag)),
+            State::Final(tag) => fmt.write_fmt(format_args!("(({:?}))", tag))
+        }
+    }
+}
+
+impl<T: Display + Eq> Display for State<T> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            State::Initial(tag) => fmt.write_fmt(format_args!(">({})", tag)),
+            State::Interim(tag) => fmt.write_fmt(format_args!("({})", tag)),
+            State::Final(tag) => fmt.write_fmt(format_args!("(({}))", tag))
         }
     }
 }
@@ -113,5 +133,31 @@ impl<'a, T: Eq> Q<'a, T> {
 impl<'a, T: Eq> AsRef<[State<Tag<'a, T>>]> for Q<'a, T> {
     fn as_ref(&self) -> &[State<Tag<'a, T>>] {
         &self.0
+    }
+}
+
+impl<'a, T: Debug + Display + Eq> Debug for Q<'a, T> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char('[')?;
+        for itm in self.0.iter().take(1) {
+            fmt.write_fmt(format_args!("{itm:?}"))?;
+        }
+        for itm in self.0.iter().skip(1) {
+            fmt.write_fmt(format_args!(",{itm:?}"))?;
+        }
+        fmt.write_char(']')
+    }
+}
+
+impl<'a, T: Display + Eq> Display for Q<'a, T> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char('[')?;
+        for itm in self.0.iter().take(1) {
+            fmt.write_fmt(format_args!("{itm}"))?;
+        }
+        for itm in self.0.iter().skip(1) {
+            fmt.write_fmt(format_args!(",{itm}"))?;
+        }
+        fmt.write_char(']')
     }
 }

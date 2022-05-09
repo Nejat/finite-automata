@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::{self, Debug, Display, Formatter};
 use std::hash::Hash;
 
 use crate::model::sigma::Σ;
@@ -95,5 +96,19 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
         self.0.keys()
             .find(|s| matches!(s, State::Initial(_)))
             .expect(EXPECTED_INITIAL_STATE)
+    }
+}
+
+impl<'a, A: Debug + Eq, S: Debug + Display + Eq + Hash> Debug for δ<'a, A, S> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct("δ")
+            .field("δ", &self.0)
+            .finish()
+    }
+}
+
+impl<'a, A: Debug + Display + Eq, S: Display + Eq + Hash> Display for δ<'a, A, S> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_fmt(format_args!("δ {{ δ: {:?}}}", self.0))
     }
 }
