@@ -1,4 +1,4 @@
-use crate::dfa::{DFA, δ};
+use crate::dfa::{self, DFA};
 use crate::dfa::machine::ERR_INVALID_INPUT;
 use crate::model::{Q, State, Σ};
 
@@ -23,7 +23,7 @@ fn given_a_valid_fsm_should_fail_incorrect_input() {
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
+    let delta = dfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
 
     let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0, 1];
@@ -33,7 +33,7 @@ fn given_a_valid_fsm_should_fail_incorrect_input() {
     let actual = sut.matches();
     let expected = false;
 
-    assert_eq!(expected, actual, "running failing input");
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -57,7 +57,7 @@ fn given_a_valid_fsm_should_fail_invalid_input() {
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
+    let delta = dfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
 
     let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 2];
@@ -90,7 +90,7 @@ fn given_a_valid_fsm_you_should_be_able_to_process_step_by_step() {
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
+    let delta = dfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
 
     let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0, 0];
@@ -126,7 +126,7 @@ fn given_a_valid_fsm_you_should_be_able_to_process_steps() {
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
+    let delta = dfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
 
     let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0];
@@ -160,7 +160,7 @@ fn given_a_valid_fsm_you_should_be_able_to_reset_and_restart_steps() {
         ("D", vec![(0, "A"), (1, "A")]),
     ];
 
-    let delta = δ::new(&q, &sigma, delta).expect("a valid delta table");
+    let delta = dfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
 
     let mut sut = DFA::new(delta);
     let inputs = [0, 1, 1, 0];

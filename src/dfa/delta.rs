@@ -6,6 +6,10 @@ use crate::model::sigma::Σ;
 use crate::model::state::{Q, State, Tag};
 use crate::youve_been_duped;
 
+pub(crate) type TransitionState<'a, S> = &'a State<Tag<'a, S>>;
+
+type Transitions<'a, A, S> = HashMap<&'a State<Tag<'a, S>>, HashMap<A, &'a State<Tag<'a, S>>>>;
+
 pub(crate) const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
 pub(crate) const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
 pub(crate) const ERR_UNDEFINED_SYMBOL: &str = "Use of undefined symbol in input transitions";
@@ -18,8 +22,6 @@ pub(crate) const ERR_MISSING_STATE_TRANSITION: &str = "Not all transitions match
 pub(crate) const ERR_REDEFINED_INPUT_TRANSITION: &str = "Each state transition must define each input only once";
 
 const EXPECTED_INITIAL_STATE: &str = "DFA expects an initial state defined in transitions table";
-
-type Transitions<'a, A, S> = HashMap<&'a State<Tag<'a, S>>, HashMap<A, &'a State<Tag<'a, S>>>>;
 
 #[allow(non_camel_case_types)]
 pub struct δ<'a, A: Eq, S: Eq + Hash>(Transitions<'a, A, S>);
@@ -92,7 +94,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
         }
     }
 
-    pub(crate) fn get_initial_state(&self) -> &'a State<Tag<'a, S>> {
+    pub(crate) fn get_initial_state(&self) -> TransitionState<'a, S> {
         self.0.keys()
             .find(|s| matches!(s, State::Initial(_)))
             .expect(EXPECTED_INITIAL_STATE)
