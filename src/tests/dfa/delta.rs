@@ -21,6 +21,7 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
     let states = vec![
         State::Initial("A"),
         State::Interim("C"),
+        State::Interim("D"),
         State::Final("B"),
     ];
 
@@ -30,7 +31,7 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
     let delta = vec![
         ("A", vec![(0, "A"), (1, "B")]),
         ("C", vec![(0, "C"), (1, "B")]),
-        ("B", vec![(0, "A"), (1, "B")]),
+        ("B", vec![(0, "B"), (1, "A")]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);

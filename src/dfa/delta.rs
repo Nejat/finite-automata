@@ -76,14 +76,16 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                 let transition_states = |transition| table.iter()
                     .filter_map(
                         move |(state, transitions)|
-                            if state != transition || matches!(state, State::Initial(_)) {
+                            if state != transition {
                                 Some(transitions)
                             } else {
                                 None
                             }
                     ).flat_map(|transitions| transitions.values());
 
-                if table.keys().any(|state| !transition_states(state).any(|transition| transition == state)) {
+                if table.keys().any(|state|
+                    !matches!(state, State::Initial(_)) &&
+                        transition_states(state).all(|transition| transition != state)) {
                     Err(ERR_DANGLING_STATE)
                 } else {
                     Ok(Self(table))
