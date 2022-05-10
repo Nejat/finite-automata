@@ -1,5 +1,3 @@
-use std::fmt::{self, Display, Formatter, Write};
-
 use crate::dfa::delta::{
     ERR_DANGLING_STATE,
     ERR_DUPED_INPUT_TRANSITION,
@@ -306,27 +304,8 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
     #[derive(Copy, Clone, Eq, PartialEq, Hash)]
     enum Sym { S0, S1 }
 
-    impl Display for Sym {
-        fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-            fmt.write_char(match self {
-                Self::S0 => '0',
-                Self::S1 => '1'
-            })
-        }
-    }
-
     #[derive(Copy, Clone, Eq, PartialEq, Hash)]
     enum Sta { SA, SB, SC }
-
-    impl Display for Sta {
-        fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-            fmt.write_char(match self {
-                Self::SA => 'A',
-                Self::SB => 'B',
-                Self::SC => 'C',
-            })
-        }
-    }
 
     let symbols = vec![S0, S1];
     let states = vec![

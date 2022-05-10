@@ -9,7 +9,7 @@ fn given_a_collection_of_values_for_a_state_with_dupes_we_should_get_an_err() {
     let states = vec!['A', 'B', 'A'];
     let sut = Tag::new(&states);
 
-    assert!(matches!(sut, Err(_err)))
+    assert!(matches!(sut, Err(_err)));
 }
 
 #[test]
@@ -79,7 +79,7 @@ fn given_a_collection_of_values_for_states_with_dupe_state_names_we_should_get_a
 
     let sut = Q::new(&states);
 
-    assert!(matches!(sut, Err(err) if err == ERR_DUPED_STATES))
+    assert!(matches!(sut, Err(err) if err == ERR_DUPED_STATES));
 }
 
 #[test]
@@ -93,7 +93,7 @@ fn given_a_collection_of_values_for_states_with_multiple_initial_states_we_shoul
 
     let sut = Q::new(&states);
 
-    assert!(matches!(sut, Err(err) if err == ERR_INITIAL_STATES))
+    assert!(matches!(sut, Err(err) if err == ERR_INITIAL_STATES));
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn given_a_collection_of_values_for_states_with_no_final_states_we_should_get_an
 
     let sut = Q::new(&states);
 
-    assert!(matches!(sut, Err(err) if err == ERR_FINAL_STATES))
+    assert!(matches!(sut, Err(err) if err == ERR_FINAL_STATES));
 }
 
 #[test]
