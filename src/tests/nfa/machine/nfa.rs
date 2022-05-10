@@ -8,15 +8,15 @@ fn given_a_valid_fsm_should_fail_incorrect_input() {
     let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
-        State::Initial("A"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Final('B'),
     ];
 
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "A"), (0, "B")]),
-        ("B", vec![]),
+        ('A', vec![(0, 'A'), (1, 'A'), (0, 'B')]),
+        ('B', vec![]),
     ];
 
     let delta = nfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
@@ -38,16 +38,16 @@ fn given_a_valid_fsm_should_fail_invalid_input() {
     let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
-        State::Initial("A"),
-        State::Final("B"),
-        State::Interim("C"),
+        State::Initial('A'),
+        State::Final('B'),
+        State::Interim('C'),
     ];
 
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "A"), (0, "B")]),
-        ("B", vec![]),
+        ('A', vec![(0, 'A'), (1, 'A'), (0, 'B')]),
+        ('B', vec![]),
     ];
 
     let delta = nfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
@@ -68,16 +68,16 @@ fn given_a_valid_fsm_you_should_be_able_to_process_step_by_step() {
     let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
-        State::Initial("A"),
-        State::Final("B"),
-        State::Interim("C"),
+        State::Initial('A'),
+        State::Final('B'),
+        State::Interim('C'),
     ];
 
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "A"), (0, "B")]),
-        ("B", vec![]),
+        ('A', vec![(0, 'A'), (1, 'A'), (0, 'B')]),
+        ('B', vec![]),
     ];
 
     let delta = nfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
@@ -101,16 +101,16 @@ fn given_a_valid_fsm_you_should_be_able_to_process_steps() {
     let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
-        State::Initial("A"),
-        State::Final("B"),
-        State::Interim("C"),
+        State::Initial('A'),
+        State::Final('B'),
+        State::Interim('C'),
     ];
 
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "A"), (0, "B")]),
-        ("B", vec![]),
+        ('A', vec![(0, 'A'), (1, 'A'), (0, 'B')]),
+        ('B', vec![]),
     ];
 
     let delta = nfa::δ::new(&q, &sigma, delta).expect("a valid delta table");
@@ -132,17 +132,17 @@ fn given_a_valid_fsm_you_should_be_able_to_reset_and_restart_steps() {
     let sigma = Σ::new(&symbols).expect("valid sigma");
 
     let states = vec![
-        State::Initial("A"),
-        State::Final("B"),
-        State::Interim("C"),
+        State::Initial('A'),
+        State::Final('B'),
+        State::Interim('C'),
     ];
 
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(1, "C")]),
-        ("C", vec![(0, "C"), (1, "C"), (0, "B")]),
-        ("B", vec![]),
+        ('A', vec![(1, 'C')]),
+        ('C', vec![(0, 'C'), (1, 'C'), (0, 'B')]),
+        ('B', vec![]),
     ];
 
     let delta = nfa::δ::new(&q, &sigma, delta).expect("a valid delta table");

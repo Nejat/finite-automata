@@ -17,18 +17,18 @@ use crate::nfa::δ;
 fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (0, "B")]),
-        ("C", vec![(0, "C"), (1, "B")]),
-        ("B", vec![(0, "A"), (1, "B")]),
+        ('A', vec![(0, 'A'), (0, 'B')]),
+        ('C', vec![(0, 'C'), (1, 'B')]),
+        ('B', vec![(0, 'A'), (1, 'B')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -43,18 +43,18 @@ fn given_a_collection_of_transitions_with_dangling_states_should_get_an_err() {
 fn given_a_collection_of_transitions_with_dangling_initial_state_should_give_you_a_transition_table() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C")]),
-        ("C", vec![(0, "C"), (1, "B")]),
-        ("B", vec![(0, "B"), (1, "B")]),
+        ('A', vec![(0, 'A'), (1, 'C')]),
+        ('C', vec![(0, 'C'), (1, 'B')]),
+        ('B', vec![(0, 'B'), (1, 'B')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -68,18 +68,18 @@ fn given_a_collection_of_transitions_with_dangling_initial_state_should_give_you
 fn given_a_collection_of_transitions_with_duplicate_input_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C")]),
-        ("C", vec![(0, "C"), (0, "C")]),
-        ("B", vec![(0, "C")]),
+        ('A', vec![(0, 'A'), (1, 'C')]),
+        ('C', vec![(0, 'C'), (0, 'C')]),
+        ('B', vec![(0, 'C')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -94,18 +94,18 @@ fn given_a_collection_of_transitions_with_duplicate_input_transitions_should_get
 fn given_a_collection_of_transitions_with_duplicate_states_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C")]),
-        ("C", vec![]),
-        ("C", vec![(0, "C"), (1, "B")]),
+        ('A', vec![(0, 'A'), (1, 'C')]),
+        ('C', vec![]),
+        ('C', vec![(0, 'C'), (1, 'B')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -120,17 +120,17 @@ fn given_a_collection_of_transitions_with_duplicate_states_should_get_an_err() {
 fn given_a_collection_of_transitions_with_missing_final_state_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C")]),
-        ("C", vec![(1, "A")]),
+        ('A', vec![(0, 'A'), (1, 'C')]),
+        ('C', vec![(1, 'A')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -145,17 +145,17 @@ fn given_a_collection_of_transitions_with_missing_final_state_should_get_an_err(
 fn given_a_collection_of_transitions_with_missing_initial_state_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("B", vec![(1, "C")]),
-        ("C", vec![(0, "C"), (1, "B")]),
+        ('B', vec![(1, 'C')]),
+        ('C', vec![(0, 'C'), (1, 'B')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -170,18 +170,18 @@ fn given_a_collection_of_transitions_with_missing_initial_state_should_get_an_er
 fn given_a_collection_of_transitions_with_missing_input_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C")]),
-        ("C", vec![(0, "C"), (1, "A"), (1, "B")]),
-        ("D", vec![(0, "C"), (1, "B")]),
+        ('A', vec![(0, 'A'), (1, 'C')]),
+        ('C', vec![(0, 'C'), (1, 'A'), (1, 'B')]),
+        ('D', vec![(0, 'C'), (1, 'B')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -196,17 +196,17 @@ fn given_a_collection_of_transitions_with_missing_input_transitions_should_get_a
 fn given_a_collection_of_transitions_with_missing_state_transitions_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C")]),
-        ("B", vec![]),
+        ('A', vec![(0, 'A'), (1, 'C')]),
+        ('B', vec![]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
@@ -221,18 +221,18 @@ fn given_a_collection_of_transitions_with_missing_state_transitions_should_get_a
 fn given_a_collection_of_transitions_with_undefined_symbols_should_get_an_err() {
     let symbols = vec![0, 1];
     let states = vec![
-        State::Initial("A"),
-        State::Interim("C"),
-        State::Final("B"),
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
     ];
 
     let sigma = Σ::new(&symbols).expect("valid sigma");
     let q = Q::new(&states).expect("valid states");
 
     let delta = vec![
-        ("A", vec![(0, "A"), (1, "C"), (2, "B")]),
-        ("C", vec![(0, "C")]),
-        ("B", vec![(0, "C"), (1, "B")]),
+        ('A', vec![(0, 'A'), (1, 'C'), (2, 'B')]),
+        ('C', vec![(0, 'C')]),
+        ('B', vec![(0, 'C'), (1, 'B')]),
     ];
 
     let sut = δ::new(&q, &sigma, delta);
