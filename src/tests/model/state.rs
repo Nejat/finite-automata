@@ -126,3 +126,31 @@ fn given_a_collection_of_unique_values_for_states_should_get_states() {
 
     assert_eq!(&expected, sut.as_ref());
 }
+
+#[test]
+fn given_a_collection_of_unique_values_for_states_should_debug_output() {
+    let states = vec![
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
+    ];
+
+    let sut = Q::new(&states).expect("valid states");
+    let expected = "[>({A}),({C}),(({B}))]";
+
+    assert_eq!(expected, format!("{sut:?}"));
+}
+
+#[test]
+fn given_a_collection_of_unique_values_for_states_should_display_output() {
+    let states = vec![
+        State::Initial('A'),
+        State::Interim('C'),
+        State::Final('B'),
+    ];
+
+    let sut = Q::new(&states).expect("valid states");
+    let expected = "[>(A),(C),((B))]";
+
+    assert_eq!(expected, format!("{sut}"));
+}
