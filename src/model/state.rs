@@ -101,17 +101,6 @@ impl<'a, T: Display + Eq> Display for Tag<'a, T> {
 pub struct Q<'a, T: Eq>(Vec<State<Tag<'a, T>>>);
 
 impl<'a, T: Eq> Q<'a, T> {
-    pub(crate) fn get_state(&self, state: &T) -> Option<&State<Tag<'a, T>>> {
-        let find = vec![state];
-
-        match self.as_ref().iter().find(|v| (**v).as_ref().as_ref() == find) {
-            Some(state) => Some(state),
-            None => None
-        }
-    }
-}
-
-impl<'a, T: Eq> Q<'a, T> {
     /// # Errors
     pub fn new(states: &'a [State<T>]) -> Result<Self, &'static str> {
         if youve_been_duped_ref(states) {
@@ -136,6 +125,15 @@ impl<'a, T: Eq> Q<'a, T> {
             } else {
                 Err(ERR_INITIAL_STATES)
             }
+        }
+    }
+
+    pub(crate) fn get_state(&self, state: &T) -> Option<&State<Tag<'a, T>>> {
+        let find = vec![state];
+
+        match self.as_ref().iter().find(|v| (**v).as_ref().as_ref() == find) {
+            Some(state) => Some(state),
+            None => None
         }
     }
 }

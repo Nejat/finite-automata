@@ -18,3 +18,9 @@ impl Display for MachineState {
         )
     }
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+pub enum Sym { S0, S1 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+pub enum Sta { SA, SB, SC }

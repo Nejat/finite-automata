@@ -243,14 +243,8 @@ fn given_a_collection_of_transitions_with_undefined_symbols_should_get_an_err() 
 
 #[test]
 fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_table() {
-    use Sym::{S0, S1};
-    use Sta::{SA, SB, SC};
-
-    #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-    enum Sym { S0, S1 }
-
-    #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-    enum Sta { SA, SB, SC }
+    use crate::tests::Sym::{S0, S1};
+    use crate::tests::Sta::{SA, SB, SC};
 
     let symbols = vec![S0, S1];
     let states = vec![
