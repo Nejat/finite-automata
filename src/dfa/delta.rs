@@ -3,12 +3,12 @@ use std::fmt::{self, Debug, Display, Formatter};
 use std::hash::Hash;
 
 use crate::model::sigma::Σ;
-use crate::model::state::{Q, State, Tag};
+use crate::model::state::{Q, State};
 use crate::youve_been_duped;
 
-pub type TransitionState<'a, S> = &'a State<Tag<'a, S>>;
+pub type TransitionState<'a, S> = &'a State<'a, S>;
 
-type Transitions<'a, A, S> = HashMap<&'a State<Tag<'a, S>>, HashMap<A, &'a State<Tag<'a, S>>>>;
+type Transitions<'a, A, S> = HashMap<&'a State<'a, S>, HashMap<A, &'a State<'a, S>>>;
 
 pub const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
 pub const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
@@ -35,17 +35,23 @@ impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for δ<'a, A, S> {
 
 impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
     /// # Errors
+    #[allow(non_snake_case)]
+    #[allow(clippy::needless_pass_by_value)]
     pub fn new(
-        q: &'a Q<'a, S>,
+        Q: &'a mut Q<'a, S>,
         sigma: &'a Σ<'a, A>,
         delta: Vec<(S, Vec<(A, S)>)>,
+        q0: S,
+        F: Vec<S>,
     ) -> Result<Self, &'static str> {
-        let mut table = HashMap::new();
+        Q.set_phases(&q0, &F)?;
+
+        let mut state_transistion = HashMap::new();
 
         for (state, input_transitions) in delta {
-            let state_node = { q.get_state(&state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)? };
+            let state_node = Q.get_state(&[&state]).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?;
 
-            if table.contains_key(state_node) {
+            if state_transistion.contains_key(state_node) {
                 return Err(ERR_DUPED_TRANSITION);
             }
 
@@ -61,21 +67,21 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
 
             let inputs = input_transitions.into_iter()
                 .map(|(sym, state)|
-                    Ok((sym, q.get_state(&state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?))
+                    Ok((sym, Q.get_state(&[&state]).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?))
                 ).collect::<Result<HashMap<_, _>, _>>();
 
-            table.insert(state_node, inputs?);
+            state_transistion.insert(state_node, inputs?);
         }
 
-        if !table.keys().any(|key| matches!(key, State::Initial(_))) {
+        if !state_transistion.keys().any(|state| state.is_initial()) {
             Err(ERR_MISSING_INITIAL_STATE_TRANSITION)
-        } else if !table.keys().any(|key| matches!(key, State::Final(_))) {
+        } else if !state_transistion.keys().any(|state| state.is_final()) {
             Err(ERR_MISSING_FINAL_STATE_TRANSITION)
         } else {
-            let states = table.values().flat_map(HashMap::values);
+            let states = state_transistion.values().flat_map(HashMap::values);
 
-            if states.clone().all(|state| table.contains_key(*state)) {
-                let transition_states = |transition| table.iter()
+            if states.clone().all(|state| state_transistion.contains_key(*state)) {
+                let transition_states = |transition| state_transistion.iter()
                     .filter_map(
                         move |(state, transitions)|
                             if state == transition {
@@ -85,12 +91,12 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                             }
                     ).flat_map(HashMap::values);
 
-                if table.keys().any(|state|
-                    !matches!(state, State::Initial(_)) &&
+                if state_transistion.keys().any(|state|
+                    !state.is_initial() &&
                         transition_states(state).all(|transition| transition != state)) {
                     Err(ERR_DANGLING_STATE)
                 } else {
-                    Ok(Self(table))
+                    Ok(Self(state_transistion))
                 }
             } else {
                 Err(ERR_MISSING_STATE_TRANSITION)
@@ -100,7 +106,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
 
     pub(crate) fn get_initial_state(&self) -> TransitionState<'a, S> {
         self.0.keys()
-            .find(|s| matches!(s, State::Initial(_)))
+            .find(|state| state.is_initial())
             .expect(EXPECTED_INITIAL_STATE)
     }
 }

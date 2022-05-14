@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 use std::hash::Hash;
 
-use crate::model::state::State;
 use crate::nfa::delta::{TransitionState, δ};
 
 pub const ERR_INVALID_INPUT: &str = "Invalid input encountered";
@@ -28,7 +27,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> NFA<'a, A, S>
     ///
     #[must_use]
     pub fn matches(&self) -> bool {
-        self.current.iter().any(|state| matches!(state, State::Final(_)))
+        self.current.iter().any(|state| state.is_final())
     }
 
     ///

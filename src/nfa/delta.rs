@@ -1,13 +1,14 @@
+use std::borrow::BorrowMut;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Debug, Display, Formatter};
 use std::hash::Hash;
 
 use crate::model::sigma::Σ;
-use crate::model::state::{Q, State, Tag};
+use crate::model::state::{Q, State};
 
-pub type TransitionState<'a, S> = HashSet<&'a State<Tag<'a, S>>>;
+pub type TransitionState<'a, S> = HashSet<&'a State<'a, S>>;
 
-type Transitions<'a, A, S> = HashMap<&'a State<Tag<'a, S>>, HashMap<A, TransitionState<'a, S>>>;
+type Transitions<'a, A, S> = HashMap<&'a State<'a, S>, HashMap<A, TransitionState<'a, S>>>;
 
 pub const ERR_DANGLING_STATE: &str = "List of state transitions has dangling states";
 pub const ERR_DUPED_TRANSITION: &str = "List of state transitions must be unique";
@@ -35,17 +36,23 @@ impl<'a, A: Eq, S: Eq + Hash> AsRef<Transitions<'a, A, S>> for δ<'a, A, S> {
 
 impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
     /// # Errors
+    #[allow(non_snake_case)]
+    #[allow(clippy::needless_pass_by_value)]
     pub fn new(
-        q: &'a Q<'a, S>,
+        Q: &'a mut Q<'a, S>,
         sigma: &'a Σ<'a, A>,
-        delta_source: Vec<(S, Vec<(A, S)>)>,
+        delta: Vec<(S, Vec<(A, S)>)>,
+        q0: S,
+        F: Vec<S>,
     ) -> Result<Self, &'static str> {
-        let mut delta = HashMap::new();
+        Q.borrow_mut().set_phases(&q0, &F)?;
 
-        for (state, input_transitions) in delta_source {
-            let state_node = { q.get_state(&state).ok_or(ERR_UNDEFINED_TRANSITION_STATE)? };
+        let mut state_transitions = HashMap::new();
 
-            if delta.contains_key(state_node) {
+        for (state, input_transitions) in delta {
+            let state_node = Q.get_state(&[&state]).ok_or(ERR_UNDEFINED_TRANSITION_STATE)?;
+
+            if state_transitions.contains_key(state_node) {
                 return Err(ERR_DUPED_TRANSITION);
             }
 
@@ -56,7 +63,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                         match acc {
                             Ok(mut acc) => {
                                 if sigma.as_ref().contains(&sym) {
-                                    let state = q.get_state(&state)
+                                    let state = Q.get_state(&[&state])
                                         .ok_or(ERR_UNDEFINED_TRANSITION_STATE)?;
 
                                     let entry = acc.entry(sym).or_insert_with(HashSet::new);
@@ -76,18 +83,18 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                         },
                 );
 
-            delta.insert(state_node, inputs?);
+            state_transitions.insert(state_node, inputs?);
         }
 
-        if !delta.keys().any(|key| matches!(key, State::Initial(_))) {
+        if !state_transitions.keys().any(|state| state.is_initial()) {
             Err(ERR_MISSING_INITIAL_STATE_TRANSITION)
-        } else if !delta.keys().any(|key| matches!(key, State::Final(_))) {
+        } else if !state_transitions.keys().any(|state| state.is_final()) {
             Err(ERR_MISSING_FINAL_STATE_TRANSITION)
         } else {
-            let states = delta.values().flat_map(HashMap::values);
+            let states = state_transitions.values().flat_map(HashMap::values);
 
-            if states.clone().all(|states| states.iter().all(|state| delta.contains_key(*state))) {
-                let transition_states = |transition| delta.iter()
+            if states.clone().all(|states| states.iter().all(|state| state_transitions.contains_key(*state))) {
+                let transition_states = |transition| state_transitions.iter()
                     .filter_map(
                         move |(state, transitions)|
                             if state == transition {
@@ -97,8 +104,8 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                             }
                     ).flat_map(HashMap::values);
 
-                if delta.keys().any(|state|
-                    !matches!(state, State::Initial(_)) &&
+                if state_transitions.keys().any(
+                    |state| !state.is_initial() &&
                         transition_states(state).all(
                             |states| states.iter().all(|transition| transition != state)
                         )
@@ -107,7 +114,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
                 } else {
                     Ok(Self {
                         sigma,
-                        delta,
+                        delta: state_transitions,
                     })
                 }
             } else {
@@ -121,7 +128,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
 
         state.insert(
             *self.delta.keys()
-                .find(|s| matches!(s, State::Initial(_)))
+                .find(|state| state.is_initial())
                 .expect(EXPECTED_INITIAL_STATE)
         );
 

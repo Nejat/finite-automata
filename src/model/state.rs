@@ -1,150 +1,190 @@
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::fmt;
 
-#[cfg(test)]
 use crate::youve_been_duped;
-use crate::youve_been_duped_ref;
 
-pub const ERR_DUPED_STATES: &str = "States must be a unique collection of state identifiers";
-pub const ERR_INITIAL_STATES: &str = "States must contain at most one initial state";
+pub const ERR_DUPED_STATES: &str = "States must be a unique collection";
+pub const ERR_DUPED_TAGS: &str = "State must be a unique collection of tags";
+pub const ERR_EMPTY_STATES: &str = "States must contain at least on state";
+pub const ERR_EMPTY_TAGS: &str = "State must contain at most one tag";
+pub const ERR_INITIAL_STATE: &str = "States must contain at most one initial state";
 pub const ERR_FINAL_STATES: &str = "States must contain at least one final state";
+pub const ERR_UNDEFINED_FINAL_STATE: &str = "Final state f is not difined in Q";
+pub const ERR_UNDEFINED_INITIAL_STATE: &str = "Initial state q0 is not defined in Q";
 
 ///
+#[repr(u8)]
 #[derive(Eq, PartialEq, Hash)]
-pub enum State<T: Eq> {
+pub enum Phase {
     ///
-    Initial(T),
-
-    ///
-    Interim(T),
+    Initial,
 
     ///
-    Final(T),
-}
+    Interim,
 
-impl<T: Eq> AsRef<T> for State<T> {
-    fn as_ref(&self) -> &T {
-        match self {
-            State::Initial(node) |
-            State::Interim(node) |
-            State::Final(node) => node
-        }
-    }
-}
+    ///
+    Final,
 
-impl<T: Debug + Eq> Debug for State<T> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            State::Initial(tag) => fmt.write_fmt(format_args!(">({:?})", tag)),
-            State::Interim(tag) => fmt.write_fmt(format_args!("({:?})", tag)),
-            State::Final(tag) => fmt.write_fmt(format_args!("(({:?}))", tag))
-        }
-    }
-}
-
-impl<T: Display + Eq> Display for State<T> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            State::Initial(tag) => fmt.write_fmt(format_args!(">({})", tag)),
-            State::Interim(tag) => fmt.write_fmt(format_args!("({})", tag)),
-            State::Final(tag) => fmt.write_fmt(format_args!("(({}))", tag))
-        }
-    }
+    ///
+    Both,
 }
 
 ///
 #[derive(Eq, PartialEq, Hash)]
-pub struct Tag<'a, T: Eq>(Vec<&'a T>);
+pub struct State<'a, S: Eq> {
+    tags: Vec<&'a S>,
+    phase: Phase,
+}
 
-#[cfg(test)]
-impl<'a, T: Eq> Tag<'a, T> {
+impl<'a, S: Eq> State<'a, S> {
     /// # Errors
-    pub(crate) fn new(sub_states: &'a [T]) -> Result<Self, &'static str> {
-        if youve_been_duped(sub_states) {
-            Err("State must be a unique collection of values")
+    pub(crate) fn new(tags: Vec<&'a S>) -> Result<Self, &'static str> {
+        if tags.is_empty() {
+            Err(ERR_EMPTY_TAGS)
+        } else if youve_been_duped(&tags) {
+            Err(ERR_DUPED_TAGS)
         } else {
-            Ok(Self(sub_states.iter().collect()))
+            Ok(Self {
+                tags,
+                phase: Phase::Interim,
+            })
         }
     }
-}
 
-impl<'a, T: Eq> AsRef<[&'a T]> for Tag<'a, T> {
-    fn as_ref(&self) -> &[&'a T] {
-        &self.0
+    #[inline]
+    pub(crate) fn is_final(&self) -> bool {
+        matches!(self.phase, Phase::Final | Phase::Both)
+    }
+
+    #[inline]
+    pub(crate) fn is_initial(&self) -> bool {
+        matches!(self.phase, Phase::Initial | Phase::Both)
+    }
+
+    pub(crate) fn set_phase(&mut self, value: Phase) {
+        self.phase = match value {
+            Phase::Initial if self.is_final() => Phase::Both,
+            Phase::Final if self.is_initial() => Phase::Both,
+            phase => phase
+        };
     }
 }
 
-impl<'a, T: Display + Eq> Debug for Tag<'a, T> {
+impl<'a, S: Eq> AsRef<[&'a S]> for State<'a, S> {
+    fn as_ref(&self) -> &[&'a S] {
+        &self.tags
+    }
+}
+
+impl<'a, S: Display + Eq> Debug for State<'a, S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        write_start_phase(&self.phase, fmt)?;
         fmt.write_char('{')?;
-        for itm in self.0.iter().take(1) {
+
+        for itm in self.tags.iter().take(1) {
             fmt.write_fmt(format_args!("{itm}"))?;
         }
-        for itm in self.0.iter().skip(1) {
+
+        for itm in self.tags.iter().skip(1) {
             fmt.write_fmt(format_args!(",{itm}"))?;
         }
-        fmt.write_char('}')
+
+        fmt.write_char('}')?;
+        write_end_phase(&self.phase, fmt)
     }
 }
 
-impl<'a, T: Display + Eq> Display for Tag<'a, T> {
+impl<'a, S: Display + Eq> Display for State<'a, S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        for itm in &self.0 {
+        write_start_phase(&self.phase, fmt)?;
+
+        for itm in &self.tags {
             fmt.write_fmt(format_args!("{itm}"))?;
         }
 
-        Ok(())
+        write_end_phase(&self.phase, fmt)
+    }
+}
+
+fn write_end_phase(phase: &Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
+    match phase {
+        Phase::Initial |
+        Phase::Interim => fmt.write_char(')'),
+        Phase::Final |
+        Phase::Both => fmt.write_str("))")
+    }
+}
+
+fn write_start_phase(phase: &Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
+    match phase {
+        Phase::Initial => fmt.write_str(">("),
+        Phase::Interim => fmt.write_char('('),
+        Phase::Final => fmt.write_str("(("),
+        Phase::Both => fmt.write_str(">((")
     }
 }
 
 ///
-pub struct Q<'a, T: Eq>(Vec<State<Tag<'a, T>>>);
+pub struct Q<'a, S: Eq>(Vec<State<'a, S>>);
 
-impl<'a, T: Eq> Q<'a, T> {
+impl<'a, S: Eq> Q<'a, S> {
     /// # Errors
-    pub fn new(states: &'a [State<T>]) -> Result<Self, &'static str> {
-        if youve_been_duped_ref(states) {
+    #[allow(clippy::missing_panics_doc)] // unwrap is ok, check below
+    pub fn new(states: &'a [S]) -> Result<Self, &'static str> {
+        if states.is_empty() {
+            Err(ERR_EMPTY_STATES)
+        } else if youve_been_duped(states) {
             Err(ERR_DUPED_STATES)
         } else {
-            let initial_states = states.iter().filter(|v| matches!(v, State::Initial(_))).count();
+            let states = states.iter()
+                // unwrap is ok because tags is never empty or duped here
+                .map(|tag| State::new(vec![tag]).unwrap())
+                .collect::<Vec<_>>();
 
-            if initial_states == 1 {
-                let final_states = states.iter().filter(|v| matches!(v, State::Final(_))).count();
-
-                if final_states == 0 {
-                    Err(ERR_FINAL_STATES)
-                } else {
-                    Ok(Self(states.iter().map(
-                        |v| match v {
-                            State::Initial(node) => State::Initial(Tag(vec![node])),
-                            State::Interim(node) => State::Interim(Tag(vec![node])),
-                            State::Final(node) => State::Final(Tag(vec![node]))
-                        }
-                    ).collect()))
-                }
-            } else {
-                Err(ERR_INITIAL_STATES)
-            }
+            Ok(Self(states))
         }
     }
 
-    pub(crate) fn get_state(&self, state: &T) -> Option<&State<Tag<'a, T>>> {
-        let find = vec![state];
+    #[inline]
+    pub(crate) fn get_state(&'a self, state: &[&S]) -> Option<&'a State<'a, S>> {
+        self.0.iter().find(|q| q.as_ref() == state)
+    }
 
-        match self.as_ref().iter().find(|v| (**v).as_ref().as_ref() == find) {
-            Some(state) => Some(state),
-            None => None
+    #[inline]
+    pub(crate) fn get_state_mut(&mut self, state: &[&S]) -> Option<&mut State<'a, S>> {
+        self.0.iter_mut().find(|q| q.as_ref() == state)
+    }
+
+    #[allow(non_snake_case)]
+    pub(crate) fn set_phases(&mut self, q0: &S, F: &[S],
+    ) -> Result<(), &'static str> {
+        let initial = self.get_state_mut(&[q0]).ok_or(ERR_UNDEFINED_INITIAL_STATE)?;
+
+        initial.set_phase(Phase::Initial);
+
+        for f in F {
+            let fin = self.get_state_mut(&[f]).ok_or(ERR_UNDEFINED_FINAL_STATE)?;
+
+            fin.set_phase(Phase::Final);
+        }
+
+        if self.0.iter().filter(|state| state.is_initial()).count() != 1 {
+            Err(ERR_INITIAL_STATE)
+        } else if self.0.iter().filter(|state| state.is_final()).count() == 0 {
+            Err(ERR_FINAL_STATES)
+        } else {
+            Ok(())
         }
     }
 }
 
-impl<'a, T: Eq> AsRef<[State<Tag<'a, T>>]> for Q<'a, T> {
-    fn as_ref(&self) -> &[State<Tag<'a, T>>] {
+impl<'a, S: Eq> AsRef<[State<'a, S>]> for Q<'a, S> {
+    fn as_ref(&self) -> &[State<'a, S>] {
         &self.0
     }
 }
 
-impl<'a, T: Debug + Display + Eq> Debug for Q<'a, T> {
+impl<'a, S: Debug + Display + Eq> Debug for Q<'a, S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.write_char('[')?;
         for itm in self.0.iter().take(1) {
@@ -157,7 +197,7 @@ impl<'a, T: Debug + Display + Eq> Debug for Q<'a, T> {
     }
 }
 
-impl<'a, T: Display + Eq> Display for Q<'a, T> {
+impl<'a, S: Display + Eq> Display for Q<'a, S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.write_char('[')?;
         for itm in self.0.iter().take(1) {

@@ -1,7 +1,6 @@
 use std::hash::Hash;
 
 use crate::dfa::delta::{TransitionState, δ};
-use crate::model::state::State;
 
 pub const ERR_INVALID_INPUT: &str = "Invalid input encountered";
 
@@ -30,7 +29,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> DFA<'a, A, S>
     ///
     #[must_use]
     pub fn matches(&self) -> bool {
-        matches!(self.current, State::Final(_))
+        self.current.is_final()
     }
 
     ///
