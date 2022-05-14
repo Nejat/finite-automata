@@ -30,9 +30,8 @@ fn given_a_collection_of_transitions_with_dangling_states_we_should_get_an_err()
 
 #[test]
 fn given_a_collection_of_transitions_with_dangling_initial_state_should_give_you_a_transition_table() {
-    let symbols = [0, 1];
     let states = ['A', 'C', 'D', 'B'];
-    let sigma = Σ::new(&symbols).expect(VALID_SIGMA);
+    let sigma = Σ::new(vec![0, 1]).expect(VALID_SIGMA);
     let mut q = Q::new(&states).expect(VALID_STATES);
 
     let delta = vec![
@@ -41,7 +40,7 @@ fn given_a_collection_of_transitions_with_dangling_initial_state_should_give_you
         ('B', vec![(0, 'B'), (1, 'B')]),
     ];
 
-    dfa::δ::new(&mut q, &sigma, delta, 'A', vec!['B']).expect(VALID_DELTA);
+    dfa::δ::new(&mut q, sigma, delta, 'A', vec!['B']).expect(VALID_DELTA);
 }
 
 #[test]
@@ -163,10 +162,8 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
     use crate::tests::Sym::{S0, S1};
     use crate::tests::Sta::{SA, SB, SC};
 
-    let symbols = [S0, S1];
     let states = [SA, SB, SC];
-
-    let sigma = Σ::new(&symbols).expect(VALID_SIGMA);
+    let sigma = Σ::new(vec![S0, S1]).expect(VALID_SIGMA);
     let mut q = Q::new(&states).expect(VALID_STATES);
 
     let delta = vec![
@@ -175,15 +172,14 @@ fn given_a_collection_of_valid_state_transitions_should_give_you_a_transition_ta
         (SB, vec![(S0, SC), (S1, SB)]),
     ];
 
-    dfa::δ::new(&mut q, &sigma, delta, SA, vec![SB]).expect(VALID_DELTA);
+    dfa::δ::new(&mut q, sigma, delta, SA, vec![SB]).expect(VALID_DELTA);
 }
 
 fn assert_delta_err(states: &[char], case: Vec<(char, Vec<(u8, char)>)>, expected: &str) {
-    let symbols = [0, 1];
-    let sigma = Σ::new(&symbols).expect(VALID_SIGMA);
+    let sigma = Σ::new(vec![0, 1]).expect(VALID_SIGMA);
     let mut q = Q::new(states).expect(VALID_STATES);
 
-    let sut = dfa::δ::new(&mut q, &sigma, case, 'A', vec!['B']);
+    let sut = dfa::δ::new(&mut q, sigma, case, 'A', vec!['B']);
 
     assert_err(expected, &sut);
 }

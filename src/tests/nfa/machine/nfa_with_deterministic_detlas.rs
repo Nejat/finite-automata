@@ -26,9 +26,8 @@ fn given_a_valid_fsm_should_fail_incorrect_input() {
 
 #[test]
 fn given_a_valid_fsm_should_fail_invalid_input() {
-    let symbols = [0, 1];
     let states = ['A', 'B', 'C', 'D'];
-    let sigma = Σ::new(&symbols).expect(VALID_SIGMA);
+    let sigma = Σ::new(vec![0, 1]).expect(VALID_SIGMA);
     let mut q = Q::new(&states).expect(VALID_STATES);
 
     let delta = vec![
@@ -38,7 +37,7 @@ fn given_a_valid_fsm_should_fail_invalid_input() {
         ('D', vec![(0, 'A'), (1, 'A')]),
     ];
 
-    let delta = nfa::δ::new(&mut q, &sigma, delta, 'A', vec!['B']).expect(VALID_DELTA);
+    let delta = nfa::δ::new(&mut q, sigma, delta, 'A', vec!['B']).expect(VALID_DELTA);
     let mut sut = NFA::new(delta);
 
     let inputs = [0, 1, 1, 2];

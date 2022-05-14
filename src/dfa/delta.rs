@@ -39,7 +39,7 @@ impl<'a, A: Eq + Hash, S: Eq + Hash> δ<'a, A, S> {
     #[allow(clippy::needless_pass_by_value)]
     pub fn new(
         Q: &'a mut Q<'a, S>,
-        sigma: &'a Σ<'a, A>,
+        sigma: Σ<A>,
         delta: Vec<(S, Vec<(A, S)>)>,
         q0: S,
         F: Vec<S>,

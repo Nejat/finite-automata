@@ -10,10 +10,9 @@ fn assert_steps_case(
     case: Vec<(char, Vec<(u8, char)>)>,
     expected: bool, steps: fn(nfa: &mut NFA<u8, char>),
 ) {
-    let symbols = [0, 1];
-    let sigma = Σ::new(&symbols).expect(VALID_SIGMA);
+    let sigma = Σ::new(vec![0, 1]).expect(VALID_SIGMA);
     let mut q = Q::new(states).expect(VALID_STATES);
-    let delta = crate::nfa::δ::new(&mut q, &sigma, case, 'A', vec!['B']).expect(VALID_DELTA);
+    let delta = crate::nfa::δ::new(&mut q, sigma, case, 'A', vec!['B']).expect(VALID_DELTA);
     let mut sut = NFA::new(delta);
 
     steps(&mut sut);
