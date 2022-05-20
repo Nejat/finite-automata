@@ -1,20 +1,21 @@
+use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::ops::Deref;
+use std::rc::Rc;
 
-use crate::youve_been_duped;
+use crate::utils::duped::Duped;
 
-pub const ERR_DUPED_STATES: &str = "States must be a unique collection";
-pub const ERR_DUPED_TAGS: &str = "State must be a unique collection of tags";
-pub const ERR_EMPTY_STATES: &str = "States must contain at least on state";
-pub const ERR_EMPTY_TAGS: &str = "State must contain at most one tag";
-pub const ERR_INITIAL_STATE: &str = "States must contain at most one initial state";
-pub const ERR_FINAL_STATES: &str = "States must contain at least one final state";
-pub const ERR_UNDEFINED_FINAL_STATE: &str = "Final state f is not difined in Q";
-pub const ERR_UNDEFINED_INITIAL_STATE: &str = "Initial state q0 is not defined in Q";
+pub const ERR_DUPLICATE_STATES: &str = "States must be a unique collection";
+pub const ERR_DUPLICATE_TAGS: &str = "State must be a unique collection of tags";
+pub const ERR_EMPTY_STATES: &str = "States must contain at least one state";
+pub const ERR_EMPTY_TAGS: &str = "State must contain at least one tag";
 
+// todo: code coverage reports missing coverage for phase derives???
 ///
 #[repr(u8)]
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug)]
 pub enum Phase {
     ///
     Initial,
@@ -30,55 +31,77 @@ pub enum Phase {
 }
 
 ///
-#[derive(Eq, PartialEq, Hash)]
-pub struct State<'a, S: Eq> {
-    tags: Vec<&'a S>,
+pub struct State<S> {
+    tags: Rc<Vec<S>>,
     phase: Phase,
 }
 
-impl<'a, S: Eq> State<'a, S> {
+impl<S: Eq> Eq for State<S> {}
+
+impl<S: Eq> PartialEq for State<S> {
+    fn eq(&self, other: &Self) -> bool {
+        self.tags == other.tags
+    }
+}
+
+impl<S: Eq + Hash> Hash for State<S> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.tags.hash(state);
+    }
+}
+
+impl<S: Eq> Deref for State<S> {
+    type Target = [S];
+
+    fn deref(&self) -> &Self::Target {
+        &self.tags
+    }
+}
+
+impl<S> Borrow<Vec<S>> for State<S> {
+    fn borrow(&self) -> &Vec<S> {
+        &self.tags
+    }
+}
+
+impl<S> Clone for State<S> {
+    fn clone(&self) -> Self {
+        Self {
+            tags: self.tags.clone(),
+            phase: self.phase,
+        }
+    }
+}
+
+impl<S: Eq> State<S> {
     /// # Errors
-    pub(crate) fn new(tags: Vec<&'a S>) -> Result<Self, &'static str> {
+    pub(crate) fn new(tags: Vec<S>, phase: Phase) -> Result<Self, &'static str> {
         if tags.is_empty() {
             Err(ERR_EMPTY_TAGS)
-        } else if youve_been_duped(&tags) {
-            Err(ERR_DUPED_TAGS)
+        } else if tags.iter().has_dupes() {
+            Err(ERR_DUPLICATE_TAGS)
         } else {
             Ok(Self {
-                tags,
-                phase: Phase::Interim,
+                tags: Rc::new(tags),
+                phase,
             })
         }
     }
 
     #[inline]
-    pub(crate) fn is_final(&self) -> bool {
+    pub(crate) const fn is_final(&self) -> bool {
         matches!(self.phase, Phase::Final | Phase::Both)
     }
 
     #[inline]
-    pub(crate) fn is_initial(&self) -> bool {
+    pub(crate) const fn is_initial(&self) -> bool {
         matches!(self.phase, Phase::Initial | Phase::Both)
     }
-
-    pub(crate) fn set_phase(&mut self, value: Phase) {
-        self.phase = match value {
-            Phase::Initial if self.is_final() => Phase::Both,
-            Phase::Final if self.is_initial() => Phase::Both,
-            phase => phase
-        };
-    }
 }
 
-impl<'a, S: Eq> AsRef<[&'a S]> for State<'a, S> {
-    fn as_ref(&self) -> &[&'a S] {
-        &self.tags
-    }
-}
-
-impl<'a, S: Display + Eq> Debug for State<'a, S> {
+impl<S: Display + Eq> Debug for State<S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write_start_phase(&self.phase, fmt)?;
+        write_start_phase(self.phase, fmt)?;
         fmt.write_char('{')?;
 
         for itm in self.tags.iter().take(1) {
@@ -90,23 +113,23 @@ impl<'a, S: Display + Eq> Debug for State<'a, S> {
         }
 
         fmt.write_char('}')?;
-        write_end_phase(&self.phase, fmt)
+        write_end_phase(self.phase, fmt)
     }
 }
 
-impl<'a, S: Display + Eq> Display for State<'a, S> {
+impl<S: Display + Eq> Display for State<S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write_start_phase(&self.phase, fmt)?;
+        write_start_phase(self.phase, fmt)?;
 
-        for itm in &self.tags {
+        for itm in self.tags.iter() {
             fmt.write_fmt(format_args!("{itm}"))?;
         }
 
-        write_end_phase(&self.phase, fmt)
+        write_end_phase(self.phase, fmt)
     }
 }
 
-fn write_end_phase(phase: &Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
+fn write_end_phase(phase: Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
     match phase {
         Phase::Initial |
         Phase::Interim => fmt.write_char(')'),
@@ -115,7 +138,7 @@ fn write_end_phase(phase: &Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
     }
 }
 
-fn write_start_phase(phase: &Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
+fn write_start_phase(phase: Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
     match phase {
         Phase::Initial => fmt.write_str(">("),
         Phase::Interim => fmt.write_char('('),
@@ -124,88 +147,32 @@ fn write_start_phase(phase: &Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
     }
 }
 
-///
-pub struct Q<'a, S: Eq>(Vec<State<'a, S>>);
+/// Set of all states
+pub struct Q<S: Eq>(Vec<S>);
 
-impl<'a, S: Eq> Q<'a, S> {
+impl<S: Eq> Q<S> {
     /// # Errors
-    #[allow(clippy::missing_panics_doc)] // unwrap is ok, check below
-    pub fn new(states: &'a [S]) -> Result<Self, &'static str> {
+    pub fn new(states: Vec<S>) -> Result<Self, &'static str> {
         if states.is_empty() {
             Err(ERR_EMPTY_STATES)
-        } else if youve_been_duped(states) {
-            Err(ERR_DUPED_STATES)
+        } else if states.iter().has_dupes() {
+            Err(ERR_DUPLICATE_STATES)
         } else {
-            let states = states.iter()
-                // unwrap is ok because tags is never empty or duped here
-                .map(|tag| State::new(vec![tag]).unwrap())
-                .collect::<Vec<_>>();
-
             Ok(Self(states))
-        }
-    }
-
-    #[inline]
-    pub(crate) fn get_state(&'a self, state: &[&S]) -> Option<&'a State<'a, S>> {
-        self.0.iter().find(|q| q.as_ref() == state)
-    }
-
-    #[inline]
-    pub(crate) fn get_state_mut(&mut self, state: &[&S]) -> Option<&mut State<'a, S>> {
-        self.0.iter_mut().find(|q| q.as_ref() == state)
-    }
-
-    #[allow(non_snake_case)]
-    pub(crate) fn set_phases(&mut self, q0: &S, F: &[S],
-    ) -> Result<(), &'static str> {
-        let initial = self.get_state_mut(&[q0]).ok_or(ERR_UNDEFINED_INITIAL_STATE)?;
-
-        initial.set_phase(Phase::Initial);
-
-        for f in F {
-            let fin = self.get_state_mut(&[f]).ok_or(ERR_UNDEFINED_FINAL_STATE)?;
-
-            fin.set_phase(Phase::Final);
-        }
-
-        if self.0.iter().filter(|state| state.is_initial()).count() != 1 {
-            Err(ERR_INITIAL_STATE)
-        } else if self.0.iter().filter(|state| state.is_final()).count() == 0 {
-            Err(ERR_FINAL_STATES)
-        } else {
-            Ok(())
         }
     }
 }
 
-impl<'a, S: Eq> AsRef<[State<'a, S>]> for Q<'a, S> {
-    fn as_ref(&self) -> &[State<'a, S>] {
+impl<S: Eq> Deref for Q<S> {
+    type Target = Vec<S>;
+
+    fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a, S: Debug + Display + Eq> Debug for Q<'a, S> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char('[')?;
-        for itm in self.0.iter().take(1) {
-            fmt.write_fmt(format_args!("{itm:?}"))?;
-        }
-        for itm in self.0.iter().skip(1) {
-            fmt.write_fmt(format_args!(",{itm:?}"))?;
-        }
-        fmt.write_char(']')
-    }
-}
-
-impl<'a, S: Display + Eq> Display for Q<'a, S> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char('[')?;
-        for itm in self.0.iter().take(1) {
-            fmt.write_fmt(format_args!("{itm}"))?;
-        }
-        for itm in self.0.iter().skip(1) {
-            fmt.write_fmt(format_args!(",{itm}"))?;
-        }
-        fmt.write_char(']')
+impl<S: Eq> From<Q<S>> for Vec<S> {
+    fn from(source: Q<S>) -> Self {
+        source.0
     }
 }

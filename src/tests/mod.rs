@@ -1,14 +1,16 @@
-use std::fmt::{Display, Formatter, Write};
+use std::fmt::{Debug, Display, Formatter, Write};
 use std::fmt;
 
-mod dfa;
+mod automata;
 mod model;
-mod nfa;
+// mod nfa;
 
-const STEPS_NO_ERRORS: &str = "expect no errors";
+const STEPS_NO_ERRORS: &str = "expect no errors in steps";
+
+const VALID_DELTA: &str = "valid δ";
+const VALID_FINAL_STATES: &str = "valid final states";
 const VALID_SIGMA: &str = "valid Σ";
 const VALID_STATES: &str = "valid Q";
-const VALID_DELTA: &str = "valid dfa::δ";
 
 #[derive(Eq, PartialEq)]
 pub enum MachineState { A, B }
@@ -17,8 +19,8 @@ impl Display for MachineState {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.write_char(
             match self {
-                MachineState::A => 'A',
-                MachineState::B => 'B'
+                Self::A => 'A',
+                Self::B => 'B'
             }
         )
     }
@@ -27,8 +29,56 @@ impl Display for MachineState {
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Sym { S0, S1 }
 
+impl Debug for Sym {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char(
+            match self {
+                Self::S0 => '0',
+                Self::S1 => '1',
+            }
+        )
+    }
+}
+
+impl Display for Sym {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char(
+            match self {
+                Self::S0 => '0',
+                Self::S1 => '1',
+            }
+        )
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-pub enum Sta { SA, SB, SC }
+pub enum Sta { SA, SB, SC, SD }
+
+impl Debug for Sta {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char(
+            match self {
+                Self::SA => 'A',
+                Self::SB => 'B',
+                Self::SC => 'C',
+                Self::SD => 'D',
+            }
+        )
+    }
+}
+
+impl Display for Sta {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char(
+            match self {
+                Self::SA => 'A',
+                Self::SB => 'B',
+                Self::SC => 'C',
+                Self::SD => 'D',
+            }
+        )
+    }
+}
 
 pub fn assert_err<T>(expected: &str, actual: &Result<T, &str>) {
     match actual {
