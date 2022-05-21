@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{self, Debug, Formatter};
 use std::hash::Hash;
 
 use crate::automata::{
@@ -18,7 +18,7 @@ const EXPECTED_TRANSITION_DEFINED: &str = "NFA expects all transition states def
 ///
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_snake_case)]
-pub struct NFA<A: Eq, S: Eq + Hash> {
+pub struct NFA<A, S: Hash> {
     Σ: Σ<A>,
     current: Vec<State<S>>,
     transitions: Transitions<A, S>,
@@ -167,18 +167,11 @@ impl<A: Eq + Hash, S: Copy + Eq + Hash> NFA<A, S> {
     }
 }
 
-impl<A: Debug + Eq, S: Debug + Display + Eq + Hash> Debug for NFA<A, S> {
+impl<A: Debug, S: Debug + Hash> Debug for NFA<A, S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("NFA")
             .field("δ", &self.transitions)
             .field("current", &self.current)
             .finish()
-    }
-}
-
-// todo: output as table
-impl<A: Debug + Display + Eq, S: Debug + Display + Eq + Hash> Display for NFA<A, S> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_fmt(format_args!("δ {{ δ: {:?}}}", self.transitions))
     }
 }

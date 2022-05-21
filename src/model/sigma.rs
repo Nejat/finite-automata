@@ -30,19 +30,6 @@ impl<T> Deref for Σ<T> {
     }
 }
 
-impl<T: Display> Display for Σ<T> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char('[')?;
-        for itm in self.0.iter().take(1) {
-            fmt.write_fmt(format_args!("{itm}"))?;
-        }
-        for itm in self.0.iter().skip(1) {
-            fmt.write_fmt(format_args!(", {itm}"))?;
-        }
-        fmt.write_char(']')
-    }
-}
-
 impl<T: Debug> Debug for Σ<T> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.write_char('[')?;
@@ -51,6 +38,19 @@ impl<T: Debug> Debug for Σ<T> {
         }
         for itm in self.0.iter().skip(1) {
             fmt.write_fmt(format_args!(", {itm:?}"))?;
+        }
+        fmt.write_char(']')
+    }
+}
+
+impl<T: Display> Display for Σ<T> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char('[')?;
+        for itm in self.0.iter().take(1) {
+            fmt.write_fmt(format_args!("{itm}"))?;
+        }
+        for itm in self.0.iter().skip(1) {
+            fmt.write_fmt(format_args!(", {itm}"))?;
         }
         fmt.write_char(']')
     }

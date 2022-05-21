@@ -15,6 +15,17 @@ const VALID_STATES: &str = "valid Q";
 #[derive(Eq, PartialEq)]
 pub enum MachineState { A, B }
 
+impl Debug for MachineState {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        fmt.write_char(
+            match self {
+                Self::A => 'A',
+                Self::B => 'B'
+            }
+        )
+    }
+}
+
 impl Display for MachineState {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.write_char(
@@ -29,56 +40,8 @@ impl Display for MachineState {
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Sym { S0, S1 }
 
-impl Debug for Sym {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char(
-            match self {
-                Self::S0 => '0',
-                Self::S1 => '1',
-            }
-        )
-    }
-}
-
-impl Display for Sym {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char(
-            match self {
-                Self::S0 => '0',
-                Self::S1 => '1',
-            }
-        )
-    }
-}
-
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Sta { SA, SB, SC, SD }
-
-impl Debug for Sta {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char(
-            match self {
-                Self::SA => 'A',
-                Self::SB => 'B',
-                Self::SC => 'C',
-                Self::SD => 'D',
-            }
-        )
-    }
-}
-
-impl Display for Sta {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_char(
-            match self {
-                Self::SA => 'A',
-                Self::SB => 'B',
-                Self::SC => 'C',
-                Self::SD => 'D',
-            }
-        )
-    }
-}
 
 pub fn assert_err<T>(expected: &str, actual: &Result<T, &str>) {
     match actual {

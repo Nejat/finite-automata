@@ -8,7 +8,7 @@ pub const ERR_DUPLICATE_FINAL_STATES: &str = "Final states must be a unique coll
 pub const ERR_EMPTY_FINAL_STATES: &str = "Final states must contain at least one state";
 
 /// Set of final states
-pub struct F<S: Eq + Hash>(HashSet<Vec<S>>);
+pub struct F<S: Hash>(HashSet<Vec<S>>);
 
 impl<S: Eq + Hash> F<S> {
     /// # Errors
@@ -23,7 +23,7 @@ impl<S: Eq + Hash> F<S> {
     }
 }
 
-impl<S: Eq + Hash> Deref for F<S> {
+impl<S: Hash> Deref for F<S> {
     type Target = HashSet<Vec<S>>;
 
     fn deref(&self) -> &Self::Target {

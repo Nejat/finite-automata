@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{self, Debug, Formatter};
 use std::hash::Hash;
 
 use crate::automata::{
@@ -17,7 +17,7 @@ pub const ERR_UNDEFINED_SYMBOL: &str = "Symbol is not defined in input transitio
 
 ///
 #[allow(clippy::upper_case_acronyms)]
-pub struct DFA<A: Eq, S: Eq + Hash> {
+pub struct DFA<A, S: Hash> {
     current: State<S>,
     transitions: Transitions<A, S>,
 }
@@ -126,18 +126,11 @@ impl<A: Eq + Hash, S: Eq + Hash> DFA<A, S> {
     }
 }
 
-impl<A: Debug + Eq, S: Debug + Display + Eq + Hash> Debug for DFA<A, S> {
+impl<A: Debug, S: Debug + Hash> Debug for DFA<A, S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("DFA")
             .field("δ", &self.transitions)
             .field("current", &self.current)
             .finish()
-    }
-}
-
-// todo: output as table
-impl<A: Debug + Display + Eq, S: Debug + Display + Eq + Hash> Display for DFA<A, S> {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_fmt(format_args!("δ {{ δ: {:?}}}", self.transitions))
     }
 }

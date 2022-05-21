@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use crate::model::Q;
 use crate::model::State;
@@ -42,14 +42,14 @@ fn given_a_state_with_duplicate_tags_we_should_get_an_err() {
 
 #[test]
 fn given_a_state_with_one_tag_should_debug_brackets_and_the_value() {
-    let states = vec![&'A'];
+    let states = vec![&MachineState::A];
 
     assert_debug_of_all_phases(&states, "A");
 }
 
 #[test]
 fn given_a_state_with_one_tag_should_display_the_value() {
-    let states = vec![&'A'];
+    let states = vec![&MachineState::A];
 
     assert_display_of_all_phases(&states, "A");
 }
@@ -76,8 +76,14 @@ fn given_states_with_dupes_we_should_get_an_err() {
     assert_err(ERR_DUPLICATE_STATES, &sut);
 }
 
+#[test]
+fn given_necessary_derives_we_cover_them_too() {
+    // two for one
+    assert_eq!(&format!("{:?}", Phase::Initial), &format!("{:?}", Phase::Initial.clone()), "clone");
+}
+
 fn assert_debug_of_all_phases<S>(source: &[S], expected: &str)
-    where S: Clone + Display + Eq
+    where S: Clone + Debug + Display + Eq
 {
     assert_output_of_all_phases(source, |pre, pst| format!("{pre}{{{expected}}}{pst}"), |sut| format!("{sut:?}"));
 }

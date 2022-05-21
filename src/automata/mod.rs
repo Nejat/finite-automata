@@ -50,12 +50,12 @@ fn convert_to_transitions<A: Eq, S: Eq + Hash>(
     Ok(states)
 }
 
-fn get_initial_state<A: Eq, S: Eq>(transitions: &Transitions<A, S>) -> State<S> {
+fn get_initial_state<A, S: Eq>(transitions: &Transitions<A, S>) -> State<S> {
     transitions.keys().find(|key| key.is_initial()).expect(UNREACHABLE_ERR).clone()
 }
 
 #[allow(non_snake_case)]
-fn validate_fa_configuration<A: Eq, S: Eq + Hash>(
+fn validate_fa_configuration<A, S: Eq + Hash>(
     Q: &Q<S>, δ: &δ<A, S>, q0: &S, F: &F<S>,
 ) -> Result<(), &'static str> {
     if Q.iter().any(|q| δ.iter().all(|(state, _)| state != q)) {

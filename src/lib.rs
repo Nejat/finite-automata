@@ -4,6 +4,8 @@
 #![deny(clippy::cargo)]
 #![deny(missing_docs)]
 // ==============================================================
+#![deny(unused_imports)]
+// ==============================================================
 #![allow(clippy::module_name_repetitions)]
 #![allow(clippy::items_after_statements)]
 // ==============================================================

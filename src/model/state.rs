@@ -15,7 +15,8 @@ pub const ERR_EMPTY_TAGS: &str = "State must contain at least one tag";
 // todo: code coverage reports missing coverage for phase derives???
 ///
 #[repr(u8)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
+#[cfg_attr(test, derive(Debug))]
 pub enum Phase {
     ///
     Initial,
@@ -44,13 +45,13 @@ impl<S: Eq> PartialEq for State<S> {
     }
 }
 
-impl<S: Eq + Hash> Hash for State<S> {
+impl<S: Hash> Hash for State<S> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.tags.hash(state);
     }
 }
 
-impl<S: Eq> Deref for State<S> {
+impl<S> Deref for State<S> {
     type Target = [S];
 
     fn deref(&self) -> &Self::Target {
@@ -99,17 +100,17 @@ impl<S: Eq> State<S> {
     }
 }
 
-impl<S: Display + Eq> Debug for State<S> {
+impl<S: Debug> Debug for State<S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         write_start_phase(self.phase, fmt)?;
         fmt.write_char('{')?;
 
         for itm in self.tags.iter().take(1) {
-            fmt.write_fmt(format_args!("{itm}"))?;
+            fmt.write_fmt(format_args!("{itm:?}"))?;
         }
 
         for itm in self.tags.iter().skip(1) {
-            fmt.write_fmt(format_args!(",{itm}"))?;
+            fmt.write_fmt(format_args!(",{itm:?}"))?;
         }
 
         fmt.write_char('}')?;
@@ -117,7 +118,7 @@ impl<S: Display + Eq> Debug for State<S> {
     }
 }
 
-impl<S: Display + Eq> Display for State<S> {
+impl<S: Display> Display for State<S> {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         write_start_phase(self.phase, fmt)?;
 
@@ -126,6 +127,36 @@ impl<S: Display + Eq> Display for State<S> {
         }
 
         write_end_phase(self.phase, fmt)
+    }
+}
+
+/// Set of all states
+pub struct Q<S>(Vec<S>);
+
+impl<S: Eq> Q<S> {
+    /// # Errors
+    pub fn new(states: Vec<S>) -> Result<Self, &'static str> {
+        if states.is_empty() {
+            Err(ERR_EMPTY_STATES)
+        } else if states.iter().has_dupes() {
+            Err(ERR_DUPLICATE_STATES)
+        } else {
+            Ok(Self(states))
+        }
+    }
+}
+
+impl<S> Deref for Q<S> {
+    type Target = Vec<S>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<S> From<Q<S>> for Vec<S> {
+    fn from(source: Q<S>) -> Self {
+        source.0
     }
 }
 
@@ -144,35 +175,5 @@ fn write_start_phase(phase: Phase, fmt: &mut Formatter<'_>) -> fmt::Result {
         Phase::Interim => fmt.write_char('('),
         Phase::Final => fmt.write_str("(("),
         Phase::Both => fmt.write_str(">((")
-    }
-}
-
-/// Set of all states
-pub struct Q<S: Eq>(Vec<S>);
-
-impl<S: Eq> Q<S> {
-    /// # Errors
-    pub fn new(states: Vec<S>) -> Result<Self, &'static str> {
-        if states.is_empty() {
-            Err(ERR_EMPTY_STATES)
-        } else if states.iter().has_dupes() {
-            Err(ERR_DUPLICATE_STATES)
-        } else {
-            Ok(Self(states))
-        }
-    }
-}
-
-impl<S: Eq> Deref for Q<S> {
-    type Target = Vec<S>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<S: Eq> From<Q<S>> for Vec<S> {
-    fn from(source: Q<S>) -> Self {
-        source.0
     }
 }
