@@ -12,7 +12,6 @@ pub const ERR_DUPLICATE_TAGS: &str = "State must be a unique collection of tags"
 pub const ERR_EMPTY_STATES: &str = "States must contain at least one state";
 pub const ERR_EMPTY_TAGS: &str = "State must contain at least one tag";
 
-// todo: code coverage reports missing coverage for phase derives???
 ///
 #[repr(u8)]
 #[derive(Copy, Clone)]
